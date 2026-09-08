@@ -271,11 +271,22 @@ function BotonNegro({ children, onClick, className = "" }) {
 }
 
 function Estatuilla({ h = 110, color, cls = "" }) {
-  const id = "est" + h;
+  const id = "est" + h + (color ? "r" : "");
+  const c1 = color || "#F6E6B4", c2 = color || "#D4A93D", c3 = color ? color : "#7A5A14", oscuro = color ? "rgba(0,0,0,.35)" : "#7A5A14";
   return (
     <svg className={cls} width={h * 0.4} height={h} viewBox="0 0 44 110" fill="none" style={{ flexShrink: 0 }}>
-      <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={color || ORO_C} /><stop offset=".6" stopColor={color || ORO} /><stop offset="1" stopColor={color ? color : ORO_O} /></linearGradient></defs>
-      <circle cx="22" cy="12" r="8" fill={`url(#${id})`} /><path d="M14 24 H30 L34 58 H10 Z" fill={`url(#${id})`} /><rect x="17" y="58" width="10" height="22" fill={`url(#${id})`} /><path d="M8 80 H36 V86 H32 V96 H12 V86 H8 Z" fill={`url(#${id})`} /><rect x="4" y="96" width="36" height="8" fill={`url(#${id})`} />
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor={c3} /><stop offset=".35" stopColor={c1} /><stop offset=".6" stopColor={c2} /><stop offset="1" stopColor={c3} /></linearGradient>
+        <linearGradient id={id + "p"} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={c1} /><stop offset="1" stopColor={c3} /></linearGradient>
+      </defs>
+      <path d="M22 2 L24.2 8.2 L30.8 8.2 L25.5 12 L27.5 18.4 L22 14.6 L16.5 18.4 L18.5 12 L13.2 8.2 L19.8 8.2 Z" fill={`url(#${id}p)`} />
+      <path d="M15.2 14.5 L11.5 36 L15.5 37 L18.4 17 Z M28.8 14.5 L32.5 36 L28.5 37 L25.6 17 Z" fill={`url(#${id})`} />
+      <circle cx="22" cy="25" r="5" fill={`url(#${id})`} /><rect x="20.2" y="29.5" width="3.6" height="4" fill={`url(#${id})`} />
+      <path d="M11.5 34 H32.5 L29 60 H15 Z" fill={`url(#${id})`} /><path d="M11.5 34 H32.5 L32 36.5 H12 Z" fill={oscuro} opacity=".6" />
+      <rect x="14.5" y="58" width="15" height="3" fill={oscuro} />
+      <path d="M15 61 H29 L33 86 H11 Z" fill={`url(#${id})`} />
+      <g stroke={oscuro} strokeWidth=".9" opacity=".8"><line x1="18.5" y1="63" x2="16.2" y2="85" /><line x1="22" y1="63" x2="22" y2="85" /><line x1="25.5" y1="63" x2="27.8" y2="85" /></g>
+      <rect x="8" y="86" width="28" height="5" fill={`url(#${id})`} /><rect x="4" y="91" width="36" height="6" fill={`url(#${id})`} /><rect x="0" y="97" width="44" height="9" fill={`url(#${id})`} /><rect x="0" y="106" width="44" height="2" fill={oscuro} />
     </svg>
   );
 }
@@ -358,7 +369,7 @@ function Carta({ nombre, valor, sub, Icono, IconoFrente, abierta, puede, tenso, 
           <div className="flex items-center justify-center" style={{ width: 40, height: 40, border: `1px solid ${ORO}`, boxShadow: `inset 0 0 0 2px ${MARFIL}, inset 0 0 0 3px ${ORO}66`, flexShrink: 0 }}><IF size={20} color={ORO_O} strokeWidth={1.5} /></div>
           <div>
             <div style={{ ...versal(9), color: ORO_O }}>{nombre}</div>
-            <div style={{ fontFamily: SERIF, fontSize: 16, lineHeight: 1.25, fontWeight: 600 }}>{valor}</div>
+            <div style={{ fontFamily: UI, fontSize: 17, lineHeight: 1.25, fontWeight: 500 }}>{valor}</div>
             {sub && <div style={{ fontFamily: UI, fontSize: 12, color: "#5A5A5A", marginTop: 2, fontStyle: "italic" }}>{sub}</div>}
           </div>
         </div>
@@ -439,7 +450,7 @@ function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true }) {
   // título: cada palabra ocupa exactamente el ancho, como en los pósters de acción
   const [s, a] = titulo.toUpperCase().split(" ");
   const fs1 = fitFont(ctx, s, D, ancho, 320), fs2 = fitFont(ctx, a, D, ancho, 320);
-  let y = H * 0.50;
+  let y = H * 0.54;
   ctx.shadowColor = "rgba(0,0,0,.55)"; ctx.shadowBlur = 36; ctx.shadowOffsetY = 14;
   ctx.fillStyle = pal.ink; ctx.font = D.replace("SIZE", fs1); ctx.fillText(s, W / 2, y);
   y += fs2 * 0.92; ctx.fillStyle = pal.acc; ctx.font = D.replace("SIZE", fs2); ctx.fillText(a, W / 2, y);
@@ -450,7 +461,7 @@ function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true }) {
   y += 14; ctx.fillStyle = pal.ink; textoFit(ctx, `UNA PELÍCULA DE ${ficha.director.n.toUpperCase()}`, R, ancho, W / 2, y, 28);
   // bloque de créditos, tres líneas chicas
   ctx.globalAlpha = 0.8; ctx.fillStyle = pal.ink;
-  [ficha.protagonista, ficha.situacion.texto, `Presupuesto ${ficha.presupuesto.nombre}`].forEach((t, i) => textoFit(ctx, t.toUpperCase(), D, ancho * 0.8, W / 2, H - 196 + i * 24, 18));
+  [ficha.protagonista, ficha.situacion.texto, `Presupuesto ${ficha.presupuesto.nombre}`].forEach((t, i) => textoFit(ctx, t.toUpperCase(), R, ancho * 0.85, W / 2, H - 226 + i * 32, 22));
   ctx.globalAlpha = 1;
   if (conResultado) {
     ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0, H - 118, W, 118);
@@ -459,7 +470,7 @@ function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true }) {
     textoFit(ctx, `${Esp(resultado.espectadores).toUpperCase()} DE ESPECTADORES`, D, ancho, W / 2, H - 70, 40);
     ctx.fillStyle = pal.ink; textoFit(ctx, `CRÍTICA ${resultado.critica.toFixed(1)}  ·  PÚBLICO ${resultado.publico.toFixed(1)}  ·  ${gano}`, R, ancho, W / 2, H - 28, 24);
   } else {
-    ctx.fillStyle = pal.ink; ctx.globalAlpha = 0.85; textoFit(ctx, "PRÓXIMAMENTE", D, ancho, W / 2, H - 60, 44); ctx.globalAlpha = 1;
+    ctx.fillStyle = pal.acc; ctx.fillRect(W / 2 - 60, H - 112, 120, 3); ctx.fillStyle = pal.ink; textoFit(ctx, "PRÓXIMAMENTE", D, ancho, W / 2, H - 58, 40);
   }
   // marco dorado y marca del juego
   ctx.strokeStyle = ORO; ctx.lineWidth = 3; ctx.strokeRect(14, 14, W - 28, H - 28); ctx.lineWidth = 1; ctx.strokeRect(24, 24, W - 48, H - 48);
