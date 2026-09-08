@@ -447,21 +447,21 @@ function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true }) {
   textoFit(ctx, ficha.actor2.n.toUpperCase(), D, ancho * 0.44, W * 0.73, m + 56, 40);
   ctx.fillStyle = pal.acc; ctx.fillRect(W / 2 - 2, m + 22, 4, 44);
   if (conResultado && resultado.premios.length) { const pr = resultado.premios[0]; const linea = resultado.nivel === 2 ? `★  GANADORA DEL ${pr.toUpperCase()}  ★` : resultado.nivel === 1 ? `★  ${pr.toUpperCase()}  ★` : `${pr.toUpperCase()}`; ctx.fillStyle = pal.acc; textoFit(ctx, linea, R, ancho, W / 2, m + 104, 24); }
-  // título: cada palabra ocupa exactamente el ancho, como en los pósters de acción
+  // título: cada palabra ocupa exactamente el ancho, como en los pósters de acción.
+  // El bloque se ancla desde abajo para que nunca pise los créditos.
   const [s, a] = titulo.toUpperCase().split(" ");
   const fs1 = fitFont(ctx, s, D, ancho, 320), fs2 = fitFont(ctx, a, D, ancho, 320);
-  let y = H * 0.54;
+  const yDirector = H - 290, yTag = yDirector - 62, yA = yTag - 84, yS = yA - fs2 * 0.92;
   ctx.shadowColor = "rgba(0,0,0,.55)"; ctx.shadowBlur = 36; ctx.shadowOffsetY = 14;
-  ctx.fillStyle = pal.ink; ctx.font = D.replace("SIZE", fs1); ctx.fillText(s, W / 2, y);
-  y += fs2 * 0.92; ctx.fillStyle = pal.acc; ctx.font = D.replace("SIZE", fs2); ctx.fillText(a, W / 2, y);
+  ctx.fillStyle = pal.ink; ctx.font = D.replace("SIZE", fs1); ctx.fillText(s, W / 2, yS);
+  ctx.fillStyle = pal.acc; ctx.font = D.replace("SIZE", fs2); ctx.fillText(a, W / 2, yA);
   ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  // tagline y director
-  y += 78; ctx.fillStyle = pal.ink; textoFit(ctx, ficha.genero.tag, I, ancho, W / 2, y, 34);
-  y += 58; ctx.fillStyle = pal.acc; ctx.fillRect(W / 2 - 60, y - 34, 120, 3);
-  y += 14; ctx.fillStyle = pal.ink; textoFit(ctx, `UNA PELÍCULA DE ${ficha.director.n.toUpperCase()}`, R, ancho, W / 2, y, 28);
+  ctx.fillStyle = pal.ink; textoFit(ctx, ficha.genero.tag, I, ancho, W / 2, yTag, 34);
+  ctx.fillStyle = pal.acc; ctx.fillRect(W / 2 - 60, yDirector - 40, 120, 3);
+  ctx.fillStyle = pal.ink; textoFit(ctx, `UNA PELÍCULA DE ${ficha.director.n.toUpperCase()}`, R, ancho, W / 2, yDirector, 28);
   // bloque de créditos, tres líneas chicas
   ctx.globalAlpha = 0.8; ctx.fillStyle = pal.ink;
-  [ficha.protagonista, ficha.situacion.texto, `Presupuesto ${ficha.presupuesto.nombre}`].forEach((t, i) => textoFit(ctx, t.toUpperCase(), R, ancho * 0.85, W / 2, H - 226 + i * 32, 22));
+  [ficha.protagonista, ficha.situacion.texto, `Presupuesto ${ficha.presupuesto.nombre}`].forEach((t, i) => textoFit(ctx, t.toUpperCase(), R, ancho * 0.85, W / 2, H - 214 + i * 32, 22));
   ctx.globalAlpha = 1;
   if (conResultado) {
     ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0, H - 118, W, 118);
