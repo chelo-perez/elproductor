@@ -271,11 +271,22 @@ function BotonNegro({ children, onClick, className = "" }) {
 }
 
 function Estatuilla({ h = 110, color, cls = "" }) {
-  const id = "est" + h;
+  const id = "est" + h + (color ? "r" : "");
+  const c1 = color || "#F6E6B4", c2 = color || "#D4A93D", c3 = color ? color : "#7A5A14", oscuro = color ? "rgba(0,0,0,.35)" : "#7A5A14";
   return (
     <svg className={cls} width={h * 0.4} height={h} viewBox="0 0 44 110" fill="none" style={{ flexShrink: 0 }}>
-      <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={color || ORO_C} /><stop offset=".6" stopColor={color || ORO} /><stop offset="1" stopColor={color ? color : ORO_O} /></linearGradient></defs>
-      <circle cx="22" cy="12" r="8" fill={`url(#${id})`} /><path d="M14 24 H30 L34 58 H10 Z" fill={`url(#${id})`} /><rect x="17" y="58" width="10" height="22" fill={`url(#${id})`} /><path d="M8 80 H36 V86 H32 V96 H12 V86 H8 Z" fill={`url(#${id})`} /><rect x="4" y="96" width="36" height="8" fill={`url(#${id})`} />
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor={c3} /><stop offset=".35" stopColor={c1} /><stop offset=".6" stopColor={c2} /><stop offset="1" stopColor={c3} /></linearGradient>
+        <linearGradient id={id + "p"} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={c1} /><stop offset="1" stopColor={c3} /></linearGradient>
+      </defs>
+      <path d="M22 2 L24.2 8.2 L30.8 8.2 L25.5 12 L27.5 18.4 L22 14.6 L16.5 18.4 L18.5 12 L13.2 8.2 L19.8 8.2 Z" fill={`url(#${id}p)`} />
+      <path d="M15.2 14.5 L11.5 36 L15.5 37 L18.4 17 Z M28.8 14.5 L32.5 36 L28.5 37 L25.6 17 Z" fill={`url(#${id})`} />
+      <circle cx="22" cy="25" r="5" fill={`url(#${id})`} /><rect x="20.2" y="29.5" width="3.6" height="4" fill={`url(#${id})`} />
+      <path d="M11.5 34 H32.5 L29 60 H15 Z" fill={`url(#${id})`} /><path d="M11.5 34 H32.5 L32 36.5 H12 Z" fill={oscuro} opacity=".6" />
+      <rect x="14.5" y="58" width="15" height="3" fill={oscuro} />
+      <path d="M15 61 H29 L33 86 H11 Z" fill={`url(#${id})`} />
+      <g stroke={oscuro} strokeWidth=".9" opacity=".8"><line x1="18.5" y1="63" x2="16.2" y2="85" /><line x1="22" y1="63" x2="22" y2="85" /><line x1="25.5" y1="63" x2="27.8" y2="85" /></g>
+      <rect x="8" y="86" width="28" height="5" fill={`url(#${id})`} /><rect x="4" y="91" width="36" height="6" fill={`url(#${id})`} /><rect x="0" y="97" width="44" height="9" fill={`url(#${id})`} /><rect x="0" y="106" width="44" height="2" fill={oscuro} />
     </svg>
   );
 }
@@ -436,21 +447,21 @@ function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true }) {
   textoFit(ctx, ficha.actor2.n.toUpperCase(), D, ancho * 0.44, W * 0.73, m + 56, 40);
   ctx.fillStyle = pal.acc; ctx.fillRect(W / 2 - 2, m + 22, 4, 44);
   if (conResultado && resultado.premios.length) { const pr = resultado.premios[0]; const linea = resultado.nivel === 2 ? `★  GANADORA DEL ${pr.toUpperCase()}  ★` : resultado.nivel === 1 ? `★  ${pr.toUpperCase()}  ★` : `${pr.toUpperCase()}`; ctx.fillStyle = pal.acc; textoFit(ctx, linea, R, ancho, W / 2, m + 104, 24); }
-  // título: cada palabra ocupa exactamente el ancho, como en los pósters de acción
+  // título: cada palabra ocupa exactamente el ancho, como en los pósters de acción.
+  // El bloque se ancla desde abajo para que nunca pise los créditos.
   const [s, a] = titulo.toUpperCase().split(" ");
   const fs1 = fitFont(ctx, s, D, ancho, 320), fs2 = fitFont(ctx, a, D, ancho, 320);
-  let y = H * 0.54;
+  const yDirector = H - 290, yTag = yDirector - 62, yA = yTag - 84, yS = yA - fs2 * 0.92;
   ctx.shadowColor = "rgba(0,0,0,.55)"; ctx.shadowBlur = 36; ctx.shadowOffsetY = 14;
-  ctx.fillStyle = pal.ink; ctx.font = D.replace("SIZE", fs1); ctx.fillText(s, W / 2, y);
-  y += fs2 * 0.92; ctx.fillStyle = pal.acc; ctx.font = D.replace("SIZE", fs2); ctx.fillText(a, W / 2, y);
+  ctx.fillStyle = pal.ink; ctx.font = D.replace("SIZE", fs1); ctx.fillText(s, W / 2, yS);
+  ctx.fillStyle = pal.acc; ctx.font = D.replace("SIZE", fs2); ctx.fillText(a, W / 2, yA);
   ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  // tagline y director
-  y += 78; ctx.fillStyle = pal.ink; textoFit(ctx, ficha.genero.tag, I, ancho, W / 2, y, 34);
-  y += 58; ctx.fillStyle = pal.acc; ctx.fillRect(W / 2 - 60, y - 34, 120, 3);
-  y += 14; ctx.fillStyle = pal.ink; textoFit(ctx, `UNA PELÍCULA DE ${ficha.director.n.toUpperCase()}`, R, ancho, W / 2, y, 28);
+  ctx.fillStyle = pal.ink; textoFit(ctx, ficha.genero.tag, I, ancho, W / 2, yTag, 34);
+  ctx.fillStyle = pal.acc; ctx.fillRect(W / 2 - 60, yDirector - 40, 120, 3);
+  ctx.fillStyle = pal.ink; textoFit(ctx, `UNA PELÍCULA DE ${ficha.director.n.toUpperCase()}`, R, ancho, W / 2, yDirector, 28);
   // bloque de créditos, tres líneas chicas
   ctx.globalAlpha = 0.8; ctx.fillStyle = pal.ink;
-  [ficha.protagonista, ficha.situacion.texto, `Presupuesto ${ficha.presupuesto.nombre}`].forEach((t, i) => textoFit(ctx, t.toUpperCase(), R, ancho * 0.85, W / 2, H - 226 + i * 32, 22));
+  [ficha.protagonista, ficha.situacion.texto, `Presupuesto ${ficha.presupuesto.nombre}`].forEach((t, i) => textoFit(ctx, t.toUpperCase(), R, ancho * 0.85, W / 2, H - 214 + i * 32, 22));
   ctx.globalAlpha = 1;
   if (conResultado) {
     ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0, H - 118, W, 118);
