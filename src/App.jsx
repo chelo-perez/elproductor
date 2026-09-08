@@ -5,8 +5,26 @@ import { Clapperboard, User, Zap, Megaphone, Star, Users, Wallet, Ticket, Trendi
 // CONTENIDO
 // =====================================================================
 // Regla de títulos: sustantivos femeninos + adjetivos femeninos o invariables → siempre concuerdan.
-const SUSTANTIVOS = ["Arma","Venganza","Misión","Búsqueda","Fuerza","Justicia","Presa","Tormenta","Amenaza","Sombra","Cacería","Fuga","Trampa","Sentencia","Conspiración","Alianza","Jugada","Deuda","Guerra","Verdad","Traición","Frontera","Furia","Caída","Ruta","Persecución","Operación","Zona","Noche","Batalla","Máquina","Ley","Máscara","Señal","Marea","Herencia"];
-const ADJETIVOS = ["Mortal","Implacable","Imposible","Letal","Suprema","Fatal","Inminente","Ciega","Extrema","Final","Perdida","Salvaje","Silenciosa","Infernal","Absoluta","Oscura","Prohibida","Inmortal","Total","Brutal","Secreta","Perfecta","Cruel","Feroz","Sangrienta","Eterna","Fugaz","Máxima","Definitiva","Peligrosa","Invisible","Radical","Terminal","Global","Rota","Inquebrantable"];
+const SUSTANTIVOS = [
+  "Arma","Venganza","Misión","Búsqueda","Fuerza","Justicia","Presa","Tormenta","Amenaza",
+  "Sombra","Cacería","Fuga","Trampa","Sentencia","Conspiración","Alianza","Jugada","Deuda",
+  "Guerra","Verdad","Traición","Frontera","Furia","Caída","Ruta","Persecución","Operación",
+  "Zona","Noche","Batalla","Máquina","Ley","Máscara","Señal","Marea","Herencia",
+  "Emboscada","Sospecha","Mentira","Promesa","Rebelión","Huida","Condena","Redención","Coartada",
+  "Ofensiva","Sangre","Ciudad","Estrella","Llamada","Frecuencia","Colonia","Tempestad","Ambición",
+  "Memoria","Cosecha","Jaula","Fiebre","Torre","Bestia","Hora","Deriva","Fortaleza",
+  "Vigilia","Órbita",
+];
+const ADJETIVOS = [
+  "Mortal","Implacable","Imposible","Letal","Suprema","Fatal","Inminente","Ciega","Extrema",
+  "Final","Perdida","Salvaje","Silenciosa","Infernal","Absoluta","Oscura","Prohibida","Inmortal",
+  "Total","Brutal","Secreta","Perfecta","Cruel","Feroz","Sangrienta","Eterna","Fugaz",
+  "Máxima","Definitiva","Peligrosa","Invisible","Radical","Terminal","Global","Rota","Inquebrantable",
+  "Última","Imparable","Indomable","Extraña","Sagrada","Nuclear","Infinita","Muda","Frágil",
+  "Furiosa","Helada","Ardiente","Maldita","Inmensa","Dorada","Fantasma","Rebelde","Clandestina",
+  "Nocturna","Insólita","Errante","Cautiva","Atómica","Colosal","Fugitiva","Voraz","Veloz",
+  "Audaz","Superior","Encubierta",
+];
 
 // Cada género trae su paleta: la app entera cambia de acento cuando se revela.
 const GENEROS = [
