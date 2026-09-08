@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Clapperboard, User, Zap, Megaphone, Star, Users, Wallet, Ticket, TrendingUp, TrendingDown, Trophy, Share2, RefreshCw, Film, ImageDown, Award, Heart, Skull, Drama, Sparkles, Rocket, Bomb, Swords, Video, CircleUserRound, Banknote, Coins } from "lucide-react";
+import { Clapperboard, User, Zap, Megaphone, Star, Users, Wallet, Ticket, TrendingUp, TrendingDown, Trophy, Share2, RefreshCw, Film, ImageDown, Award, Heart, Skull, Drama, Sparkles, Rocket, Bomb, Swords, Video, CircleUserRound, Banknote, Coins, Eye, Music } from "lucide-react";
 
 // =====================================================================
 // CONTENIDO
@@ -16,56 +16,67 @@ const GENEROS = [
   { id:"drama", nombre:"Drama", publico:12, costoBase:20, tag:"Una historia que te va a partir al medio.", pal:{ bg:"#2B2118", bg2:"#5C4632", acc:"#D4A86A", ink:"#F5EBDD" } },
   { id:"animacion", nombre:"Animación", publico:30, costoBase:70, tag:"Para toda la familia, con un chiste para los padres.", pal:{ bg:"#1E6FE0", bg2:"#7CC4FF", acc:"#FFD23F", ink:"#FFFFFF" } },
   { id:"scifi", nombre:"Ciencia ficción", publico:26, costoBase:80, tag:"El futuro llegó y no es lo que esperábamos.", pal:{ bg:"#04101F", bg2:"#0E2A4F", acc:"#3EE8FF", ink:"#E6F7FF" } },
+  { id:"super", nombre:"Superhéroes", publico:42, costoBase:120, tag:"La ciudad tiene un problema y una sola persona con capa.", pal:{ bg:"#080C24", bg2:"#1D2C7A", acc:"#FFCC00", ink:"#FFFFFF" }, motivo:"accion" },
+  { id:"suspenso", nombre:"Suspenso", publico:16, costoBase:25, tag:"Alguien miente. Quizás todos.", pal:{ bg:"#07090D", bg2:"#1C2431", acc:"#8FC1E8", ink:"#E9EFF5" }, motivo:"drama" },
+  { id:"musical", nombre:"Musical", publico:14, costoBase:40, tag:"Cuando las palabras no alcanzan, se canta.", pal:{ bg:"#25082F", bg2:"#6B1C7E", acc:"#FFD166", ink:"#FFF3FA" }, motivo:"comedia" },
 ];
 const PROTAGONISTAS = ["Un policía suspendido con una última oportunidad","Una contadora que descubre un fraude enorme","Un ex marine con un pasado que no cuenta","Una adolescente con un don que no pidió","Un agente retirado al que le secuestran a la hija","Un robot que empieza a sentir","Un sacerdote en plena crisis de fe","Una chef que perdió el gusto","Un profesor de pilates con deudas de juego","Una periodista que sabe demasiado","Un taxista nocturno que ve cosas","Una abuela que fue espía y nadie le cree"];
 const SITUACIONES = [
-  { texto:"Un secuestro con 48 horas de plazo", generos:["accion","drama"] },
-  { texto:"Un virus que no debe caer en manos equivocadas", generos:["accion","scifi","terror"] },
-  { texto:"Un traidor dentro del equipo", generos:["accion","drama"] },
+  { texto:"Un secuestro con 48 horas de plazo", generos:["accion","drama","suspenso","super"] },
+  { texto:"Un virus que no debe caer en manos equivocadas", generos:["accion","scifi","terror","super"] },
+  { texto:"Un traidor dentro del equipo", generos:["accion","drama","suspenso","super"] },
   { texto:"Una última misión antes de retirarse", generos:["accion","comedia"] },
-  { texto:"Un pueblo que esconde un secreto", generos:["terror","drama"] },
+  { texto:"Un pueblo que esconde un secreto", generos:["terror","drama","suspenso"] },
   { texto:"Un juego donde perder es morir", generos:["terror","scifi"] },
   { texto:"Una revancha veinte años después", generos:["drama","accion"] },
-  { texto:"Una boda que no debería ocurrir", generos:["comedia","drama"] },
+  { texto:"Una boda que no debería ocurrir", generos:["comedia","drama","musical"] },
   { texto:"Un viaje en el tiempo que salió mal", generos:["scifi","comedia","animacion"] },
-  { texto:"Un intercambio de cuerpos", generos:["comedia","animacion"] },
+  { texto:"Un intercambio de cuerpos", generos:["comedia","animacion","musical"] },
   { texto:"Una mascota que en realidad es un alien", generos:["animacion","scifi","comedia"] },
-  { texto:"Un apagón mundial de internet", generos:["scifi","accion","comedia"] },
+  { texto:"Un apagón mundial de internet", generos:["scifi","accion","comedia","super"] },
+  { texto:"Un villano que quiere exactamente lo mismo que el héroe", generos:["super","accion","animacion"] },
+  { texto:"Una desaparición que nadie quiere investigar", generos:["suspenso","terror","drama"] },
+  { texto:"Una audición que lo cambia todo", generos:["musical","comedia","drama"] },
+  { texto:"Un testigo que recuerda de más", generos:["suspenso","accion","drama"] },
 ];
 const DIRECTORES = [
-  { n:"Christopher Nolan", c:5, p:5, k:5, g:["accion","scifi","drama"], t:["autor"] },{ n:"Steven Spielberg", c:5, p:5, k:5, g:["accion","scifi","drama","animacion"], t:["veterano"] },
-  { n:"Quentin Tarantino", c:4, p:5, k:4, g:["accion","drama"], t:["autor"] },{ n:"Greta Gerwig", c:4, p:5, k:3, g:["comedia","drama"], t:["autor"] },
-  { n:"Martin Scorsese", c:3, p:5, k:5, g:["drama"], t:["autor","veterano"] },{ n:"Michael Bay", c:5, p:2, k:5, g:["accion","scifi"], t:["blockbuster"] },
-  { n:"James Cameron", c:5, p:4, k:5, g:["accion","scifi"], t:["blockbuster","veterano"] },{ n:"Denis Villeneuve", c:4, p:5, k:4, g:["scifi","drama"], t:["autor"] },
-  { n:"Jordan Peele", c:4, p:5, k:3, g:["terror","comedia"], t:["autor"] },{ n:"Nancy Meyers", c:3, p:3, k:3, g:["comedia"], t:["veterano"] },
-  { n:"Guillermo del Toro", c:3, p:5, k:4, g:["terror","animacion","drama"], t:["autor"] },{ n:"Wes Anderson", c:2, p:5, k:3, g:["comedia","animacion","drama"], t:["autor"] },
-  { n:"Juan José Campanella", c:4, p:5, k:2, g:["drama","comedia","animacion"], t:["veterano","ar"] },{ n:"Damián Szifron", c:4, p:4, k:2, g:["comedia","accion","drama"], t:["autor","ar"] },
-  { n:"Lucrecia Martel", c:1, p:5, k:2, g:["drama"], t:["autor","ar"] },{ n:"Pedro Almodóvar", c:2, p:5, k:3, g:["drama","comedia"], t:["autor","veterano","es"] },
+  { n:"Christopher Nolan", c:5, p:5, k:5, g:["accion","scifi","drama","super","suspenso"], t:["autor"] },{ n:"Steven Spielberg", c:5, p:5, k:5, g:["accion","scifi","drama","animacion"], t:["veterano"] },
+  { n:"Quentin Tarantino", c:4, p:5, k:4, g:["accion","drama","suspenso"], t:["autor"] },{ n:"Greta Gerwig", c:4, p:5, k:3, g:["comedia","drama","super","musical"], t:["autor"] },
+  { n:"Martin Scorsese", c:3, p:5, k:5, g:["drama","suspenso"], t:["autor","veterano"] },{ n:"Michael Bay", c:5, p:2, k:5, g:["accion","scifi","super"], t:["blockbuster"] },
+  { n:"James Cameron", c:5, p:4, k:5, g:["accion","scifi","super"], t:["blockbuster","veterano"] },{ n:"Denis Villeneuve", c:4, p:5, k:4, g:["scifi","drama","suspenso"], t:["autor"] },
+  { n:"Jordan Peele", c:4, p:5, k:3, g:["terror","comedia","super"], t:["autor"] },{ n:"Nancy Meyers", c:3, p:3, k:3, g:["comedia","musical"], t:["veterano"] },
+  { n:"Guillermo del Toro", c:3, p:5, k:4, g:["terror","animacion","drama"], t:["autor"] },{ n:"Wes Anderson", c:2, p:5, k:3, g:["comedia","animacion","drama","musical"], t:["autor"] },
+  { n:"Juan José Campanella", c:4, p:5, k:2, g:["drama","comedia","animacion","suspenso"], t:["veterano","ar"] },{ n:"Damián Szifron", c:4, p:4, k:2, g:["comedia","accion","drama","suspenso"], t:["autor","ar"] },
+  { n:"Lucrecia Martel", c:1, p:5, k:2, g:["drama","suspenso"], t:["autor","ar"] },{ n:"Pedro Almodóvar", c:2, p:5, k:3, g:["drama","comedia","musical"], t:["autor","veterano","es"] },
 ];
 const ACTORES = [
-  { n:"Tom Cruise", c:5, p:3, k:5, g:["accion","scifi"], t:["estrella","veterano"] },{ n:"Ricardo Darín", c:4, p:5, k:2, g:["drama","comedia"], t:["veterano","ar"] },
-  { n:"Keanu Reeves", c:4, p:3, k:4, g:["accion","scifi"], t:["estrella"] },{ n:"Dwayne Johnson", c:5, p:2, k:5, g:["accion","comedia","animacion"], t:["estrella"] },
-  { n:"Guillermo Francella", c:4, p:4, k:2, g:["comedia","drama"], t:["veterano","ar"] },{ n:"Adam Sandler", c:4, p:2, k:4, g:["comedia","drama"], t:["estrella"] },
-  { n:"Jason Statham", c:4, p:2, k:3, g:["accion"], t:["estrella"] },{ n:"Denzel Washington", c:4, p:5, k:4, g:["accion","drama"], t:["veterano"] },
-  { n:"Leonardo DiCaprio", c:5, p:5, k:5, g:["drama","accion"], t:["estrella"] },{ n:"Timothée Chalamet", c:4, p:4, k:3, g:["drama","scifi"], t:["revelacion"] },
-  { n:"Ryan Reynolds", c:5, p:3, k:4, g:["comedia","accion"], t:["estrella"] },{ n:"Arnold Schwarzenegger", c:4, p:2, k:4, g:["accion","scifi"], t:["estrella","veterano"] },
-  { n:"Pedro Pascal", c:5, p:4, k:4, g:["accion","scifi","drama"], t:["estrella"] },{ n:"Luis Brandoni", c:3, p:4, k:1, g:["comedia","drama"], t:["veterano","ar"] },
+  { n:"Tom Cruise", c:5, p:3, k:5, g:["accion","scifi","super"], t:["estrella","veterano"] },{ n:"Ricardo Darín", c:4, p:5, k:2, g:["drama","comedia","suspenso"], t:["veterano","ar"] },
+  { n:"Keanu Reeves", c:4, p:3, k:4, g:["accion","scifi","suspenso"], t:["estrella"] },{ n:"Dwayne Johnson", c:5, p:2, k:5, g:["accion","comedia","animacion","super"], t:["estrella"] },
+  { n:"Guillermo Francella", c:4, p:4, k:2, g:["comedia","drama"], t:["veterano","ar"] },{ n:"Adam Sandler", c:4, p:2, k:4, g:["comedia","drama","musical"], t:["estrella"] },
+  { n:"Jason Statham", c:4, p:2, k:3, g:["accion","super"], t:["estrella"] },{ n:"Denzel Washington", c:4, p:5, k:4, g:["accion","drama","suspenso"], t:["veterano"] },
+  { n:"Leonardo DiCaprio", c:5, p:5, k:5, g:["drama","accion","suspenso"], t:["estrella"] },{ n:"Timothée Chalamet", c:4, p:4, k:3, g:["drama","scifi","musical"], t:["revelacion"] },
+  { n:"Ryan Reynolds", c:5, p:3, k:4, g:["comedia","accion","super","musical"], t:["estrella"] },{ n:"Arnold Schwarzenegger", c:4, p:2, k:4, g:["accion","scifi","super"], t:["estrella","veterano"] },
+  { n:"Pedro Pascal", c:5, p:4, k:4, g:["accion","scifi","drama","super"], t:["estrella"] },{ n:"Luis Brandoni", c:3, p:4, k:1, g:["comedia","drama"], t:["veterano","ar"] },
+  { n:"Leonardo Sbaraglia", c:3, p:4, k:2, g:["drama","accion","terror","suspenso"], t:["ar"] },{ n:"Gastón Pauls", c:3, p:3, k:1, g:["comedia","drama"], t:["ar"] },
+  { n:"Rodrigo de la Serna", c:3, p:4, k:2, g:["drama","accion","suspenso"], t:["ar"] },{ n:"Martín Piroyansky", c:2, p:4, k:1, g:["comedia","drama","musical"], t:["ar"] },
 ];
 const ACTRICES = [
-  { n:"Sandra Bullock", c:4, p:3, k:4, g:["comedia","drama","scifi"], t:["estrella"] },{ n:"Meryl Streep", c:3, p:5, k:4, g:["drama","comedia"], t:["veterano"] },
-  { n:"Margot Robbie", c:5, p:4, k:4, g:["comedia","drama","accion"], t:["estrella"] },{ n:"Cate Blanchett", c:3, p:5, k:4, g:["drama","scifi"], t:["veterano"] },
-  { n:"Zendaya", c:5, p:4, k:4, g:["drama","scifi","comedia"], t:["revelacion"] },{ n:"Jennifer Lawrence", c:4, p:4, k:4, g:["drama","comedia","scifi"], t:["estrella"] },
-  { n:"Natalia Oreiro", c:3, p:3, k:2, g:["comedia","drama"], t:["ar"] },{ n:"Florence Pugh", c:4, p:5, k:3, g:["drama","terror","accion"], t:["revelacion"] },
-  { n:"Emma Stone", c:4, p:5, k:4, g:["comedia","drama"], t:["estrella"] },{ n:"Scarlett Johansson", c:5, p:4, k:5, g:["accion","scifi","drama"], t:["estrella"] },
-  { n:"Julia Roberts", c:4, p:4, k:4, g:["comedia","drama"], t:["estrella","veterano"] },{ n:"Anne Hathaway", c:4, p:4, k:4, g:["comedia","drama","scifi"], t:["estrella"] },
+  { n:"Sandra Bullock", c:4, p:3, k:4, g:["comedia","drama","scifi"], t:["estrella"] },{ n:"Meryl Streep", c:3, p:5, k:4, g:["drama","comedia","suspenso","musical"], t:["veterano"] },
+  { n:"Margot Robbie", c:5, p:4, k:4, g:["comedia","drama","accion","super","musical"], t:["estrella"] },{ n:"Cate Blanchett", c:3, p:5, k:4, g:["drama","scifi","suspenso"], t:["veterano"] },
+  { n:"Zendaya", c:5, p:4, k:4, g:["drama","scifi","comedia","super","musical"], t:["revelacion"] },{ n:"Jennifer Lawrence", c:4, p:4, k:4, g:["drama","comedia","scifi","suspenso"], t:["estrella"] },
+  { n:"Natalia Oreiro", c:3, p:3, k:2, g:["comedia","drama","musical"], t:["ar"] },{ n:"Florence Pugh", c:4, p:5, k:3, g:["drama","terror","accion","super","suspenso"], t:["revelacion"] },
+  { n:"Emma Stone", c:4, p:5, k:4, g:["comedia","drama","musical"], t:["estrella"] },{ n:"Scarlett Johansson", c:5, p:4, k:5, g:["accion","scifi","drama","super"], t:["estrella"] },
+  { n:"Julia Roberts", c:4, p:4, k:4, g:["comedia","drama"], t:["estrella","veterano"] },{ n:"Anne Hathaway", c:4, p:4, k:4, g:["comedia","drama","scifi","musical"], t:["estrella"] },
   { n:"Penélope Cruz", c:3, p:5, k:3, g:["drama","comedia"], t:["veterano","es"] },{ n:"Mercedes Morán", c:3, p:5, k:1, g:["drama","comedia"], t:["veterano","ar"] },
+  { n:"Nancy Dupláa", c:3, p:3, k:1, g:["drama","comedia"], t:["ar"] },{ n:"Carla Peterson", c:3, p:3, k:1, g:["comedia","drama"], t:["ar"] },
+  { n:"Griselda Siciliani", c:3, p:4, k:1, g:["comedia","drama","musical"], t:["ar"] },{ n:"Celeste Cid", c:3, p:3, k:1, g:["drama","comedia","terror","suspenso"], t:["ar"] },
 ];
 const PRESUPUESTOS = [
-  { nombre:"Bajo", desc:"Se filma en tres semanas y en la casa de un amigo.", mult:0.5, base:12, factor:2 },
-  { nombre:"Medio", desc:"Hay catering y una escena en helicóptero.", mult:1, base:45, factor:7 },
-  { nombre:"Blockbuster", desc:"El estudio apostó todo. Hay juguetes antes del estreno.", mult:1.8, base:140, factor:14 },
+  { nombre:"Bajo", desc:"Se filma en tres semanas y en la casa de un amigo.", mult:0.6, base:12, factor:2 },
+  { nombre:"Medio", desc:"Hay catering y una escena en helicóptero.", mult:1.6, base:45, factor:7 },
+  { nombre:"Blockbuster", desc:"El estudio apostó todo. Hay juguetes antes del estreno.", mult:3.6, base:130, factor:12 },
 ];
-const ICONO_GENERO = { accion: Bomb, comedia: Heart, terror: Skull, drama: Drama, animacion: Sparkles, scifi: Rocket };
+const ICONO_GENERO = { accion: Bomb, comedia: Heart, terror: Skull, drama: Drama, animacion: Sparkles, scifi: Rocket, super: Zap, suspenso: Eye, musical: Music };
 // Frases del resultado: varias opciones por caso para que no se repitan
 const F = {
   premio: {
@@ -99,6 +110,9 @@ const F = {
     drama: ["El monólogo del final se estudia en escuelas de actuación.", "Dura dos horas cuarenta. Nadie miró el reloj."],
     animacion: ["La mascota de la película se vendió más que la película.", "Los chicos la vieron nueve veces. Los padres, nueve veces también."],
     scifi: ["Los fans discutieron la línea temporal durante meses.", "El diseño de la nave se hizo con un presupuesto de 40 pesos y talento."],
+    super: ["La escena después de los créditos generó tres teorías y un podcast.", "El traje costó más que el guion. Se nota en los dos."],
+    suspenso: ["Nadie adivinó el final. Tampoco el guionista, dicen.", "Se prohibió contar el giro final y la gente lo contó igual."],
+    musical: ["La canción del segundo acto quedó pegada por semanas.", "El número de baile en la lluvia se filmó con lluvia de verdad."],
   },
 };
 const PREMIOS = {
@@ -134,6 +148,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 // =====================================================================
 // FÓRMULA DE ESTRENO
 // =====================================================================
+function costoDe(f, presupuesto) {
+  const cast = [f.director, f.actor1, f.actor2];
+  return Math.round((presupuesto.base + cast.reduce((s, c) => s + c.k, 0) * presupuesto.factor) * 1.5); // producción + marketing, en millones enteros
+}
 function estrenar(f) {
   const { genero, situacion, director, actor1, actor2, presupuesto } = f;
   const cast = [director, actor1, actor2];
@@ -160,9 +178,9 @@ function estrenar(f) {
   const publico = clamp(1.9 + comAvg * 0.9 + afinCount * 0.5 + (situAfin ? 0.7 : -0.5) + (critica - 5.5) * 0.25 + rnd(-1.3, 1.3), 1, 10);
   // taquilla: público potencial del género × tirón del elenco × presupuesto × boca a boca × azar
   const azar = Math.exp(rnd(-0.45, 0.45));
-  const espectadores = genero.publico * Math.pow(comAvg / 5, 1.4) * presupuesto.mult * (0.55 + publico / 12) * (situAfin ? 1 : 0.85) * taq * azar;
+  const espectadores = genero.publico * Math.pow(comAvg / 5, 1.8) * (0.55 + afinCount * 0.22) * presupuesto.mult * (0.55 + publico / 12) * (situAfin ? 1 : 0.85) * taq * azar;
   const recaudacion = espectadores * 10;
-  const total = (presupuesto.base + cast.reduce((s, c) => s + c.k, 0) * presupuesto.factor) * 1.5; // producción + marketing
+  const total = costoDe(f, presupuesto);
   const resultado = recaudacion - total;
   let nivel = 0;
   if (critica >= 8.3) nivel = 2; else if (critica >= 7.2) nivel = 1; else if (critica <= 3.2) nivel = -1;
@@ -290,6 +308,30 @@ function Estatuilla({ h = 110, color, cls = "" }) {
     </svg>
   );
 }
+// Íconos propios por premio (figuras originales, no las estatuillas registradas)
+function IconoPremio({ texto, h = 22 }) {
+  const t = texto.toLowerCase();
+  const nominada = t.startsWith("nominada"), razzie = t.includes("razzie");
+  const plata = t.includes("cóndor") || t.includes("premio sur");
+  const c1 = razzie ? "#E0485A" : plata ? "#E9E9EC" : ORO_C, c2 = razzie ? ROJO : plata ? "#9A9AA6" : ORO, c3 = razzie ? "#5A0E15" : plata ? "#5C5C66" : ORO_O;
+  const id = "pr" + (razzie ? "r" : plata ? "p" : "o") + h;
+  const G = `url(#${id})`;
+  const defs = <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={c1} /><stop offset=".55" stopColor={c2} /><stop offset="1" stopColor={c3} /></linearGradient></defs>;
+  const base = <><rect x="7" y="19" width="10" height="2" fill={G} /><rect x="5" y="21" width="14" height="2" fill={G} /></>;
+  let cuerpo;
+  if (t.includes("globo")) cuerpo = <><circle cx="12" cy="9" r="6.5" fill={G} /><path d="M5.5 9 H18.5 M12 2.5 V15.5 M7 5 Q12 8 17 5 M7 13 Q12 10 17 13" stroke={c3} strokeWidth=".9" fill="none" /><rect x="11" y="15.5" width="2" height="3.5" fill={G} />{base}</>;
+  else if (t.includes("bafta")) cuerpo = <><path d="M4 4 Q12 1 20 4 Q20 12 12 18 Q4 12 4 4 Z" fill={G} /><path d="M7.5 8 Q9.5 6.5 11 8.5 M13 8.5 Q14.5 6.5 16.5 8 M9 12.5 Q12 15 15 12.5" stroke={c3} strokeWidth="1.2" fill="none" />{base}</>;
+  else if (t.includes("palma")) cuerpo = <><path d="M12 19 V6" stroke={G} strokeWidth="1.6" /><path d="M12 6 Q6 4 3 9 Q8 7 12 9 M12 6 Q18 4 21 9 Q16 7 12 9 M12 9 Q6 9 4 15 Q9 12 12 12 M12 9 Q18 9 20 15 Q15 12 12 12 M12 12 Q9 14 9 18 Q12 15 12 15 M12 12 Q15 14 15 18 Q12 15 12 15" fill={G} />{base}</>;
+  else if (t.includes("león")) cuerpo = <><circle cx="12" cy="10" r="7.5" fill={c3} /><circle cx="12" cy="10" r="5" fill={G} /><path d="M12 3 L13.5 5.5 L10.5 5.5 Z M5 8 L7.5 8.5 L6.5 11 Z M19 8 L16.5 8.5 L17.5 11 Z M6 14 L8.5 13 L8 15.5 Z M18 14 L15.5 13 L16 15.5 Z" fill={c3} /><circle cx="10" cy="9.5" r=".8" fill={c3} /><circle cx="14" cy="9.5" r=".8" fill={c3} /><path d="M11 12 H13 L12 13.5 Z" fill={c3} />{base}</>;
+  else if (t.includes("oso")) cuerpo = <><circle cx="6.5" cy="5.5" r="2.5" fill={G} /><circle cx="17.5" cy="5.5" r="2.5" fill={G} /><circle cx="12" cy="10.5" r="7" fill={G} /><circle cx="9.5" cy="9.5" r=".9" fill={c3} /><circle cx="14.5" cy="9.5" r=".9" fill={c3} /><ellipse cx="12" cy="13" rx="2.6" ry="1.9" fill={c1} /><circle cx="12" cy="12.5" r="1" fill={c3} />{base}</>;
+  else if (t.includes("goya")) cuerpo = <><circle cx="12" cy="6" r="3.5" fill={G} /><path d="M8 11 Q12 9 16 11 L17 18 H7 Z" fill={G} />{base}</>;
+  else if (t.includes("cóndor")) cuerpo = <><path d="M12 12 Q6 3 1 6 Q5 7 6 10 Q3 10 2 13 Q7 12 12 16 Q17 12 22 13 Q21 10 18 10 Q19 7 23 6 Q18 3 12 12 Z" fill={G} /><circle cx="12" cy="11.5" r="1.4" fill={c3} />{base}</>;
+  else if (t.includes("premio sur")) cuerpo = <><path d="M12 1 L13.5 8.5 L21 10 L13.5 11.5 L12 19 L10.5 11.5 L3 10 L10.5 8.5 Z" fill={G} /><path d="M5 4 L7 6 M19 4 L17 6 M5 16 L7 14 M19 16 L17 14" stroke={c2} strokeWidth="1.2" /></>;
+  else if (t.includes("selección")) cuerpo = <><path d="M12 20 Q4 17 3 8 Q7 9 9 13 Q6 11 5 6 Q9 8 10 12 M12 20 Q20 17 21 8 Q17 9 15 13 Q18 11 19 6 Q15 8 14 12" fill="none" stroke={G} strokeWidth="1.8" strokeLinecap="round" /><circle cx="12" cy="7" r="2" fill={G} /></>;
+  else if (razzie) cuerpo = <><circle cx="12" cy="9" r="3" fill={G} /><circle cx="8.5" cy="11" r="2.6" fill={G} /><circle cx="15.5" cy="11" r="2.6" fill={G} /><circle cx="9.5" cy="15" r="2.6" fill={G} /><circle cx="14.5" cy="15" r="2.6" fill={G} /><circle cx="12" cy="18" r="2.3" fill={G} /><path d="M12 6 Q10 2 8 3 Q10 4 12 6 Q13 2 16 3 Q13 4 12 6" fill="#3E8E4A" /></>;
+  else return <Estatuilla h={h} />; // Oscar y genéricos: la estatuilla del juego
+  return <svg width={h} height={h} viewBox="0 0 24 24" style={{ flexShrink: 0, opacity: nominada ? 0.75 : 1 }}>{defs}{cuerpo}</svg>;
+}
 // ---------- Portada ----------
 function Portada({ onStart }) {
   return (
@@ -330,8 +372,10 @@ function Tambor({ items, target, spinId, delay, onStop, girado }) {
   const [pos, setPos] = useState(target);
   const [trans, setTrans] = useState("none");
   const prev = useRef(target);
+  const visto = useRef(spinId); // giros ya procesados: al montar, el actual no cuenta
   useEffect(() => {
-    if (!spinId) return;
+    if (!spinId || spinId === visto.current) return;
+    visto.current = spinId;
     setTrans("none"); setPos(prev.current % n);
     const t1 = setTimeout(() => { setTrans(`transform ${2.6 + delay}s cubic-bezier(.08,.75,.15,1)`); setPos(target + 2 * n); prev.current = target; }, 30);
     const t2 = setTimeout(onStop, (2.6 + delay) * 1000 + 60);
@@ -422,22 +466,62 @@ function textoFit(ctx, text, font, maxW, x, y, max, min) {
   const s = fitFont(ctx, text, font, maxW, max, min); ctx.font = font.replace("SIZE", s); ctx.fillText(text, x, y); return s;
 }
 function grano(ctx, W, H, n = 9000) { ctx.save(); for (let i = 0; i < n; i++) { ctx.fillStyle = Math.random() > 0.5 ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.12)"; ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2); } ctx.restore(); }
-function motivo(ctx, id, W, H, pal) {
-  ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeStyle = pal.acc; ctx.fillStyle = pal.acc;
-  if (id === "accion") { ctx.lineWidth = 6; for (let i = -10; i < 30; i++) { ctx.globalAlpha = 0.08 + (i % 3) * 0.05; ctx.beginPath(); ctx.moveTo(i * 80, 0); ctx.lineTo(i * 80 + 700, H); ctx.stroke(); } const g = ctx.createRadialGradient(W * 0.7, H * 0.42, 10, W * 0.7, H * 0.42, 420); g.addColorStop(0, pal.acc); g.addColorStop(1, "transparent"); ctx.globalAlpha = 0.55; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
-  if (id === "comedia") { for (let i = 0; i < 40; i++) { ctx.globalAlpha = 0.08 + Math.random() * 0.12; ctx.beginPath(); ctx.arc(Math.random() * W, Math.random() * H * 0.75, 40 + Math.random() * 120, 0, 7); ctx.fill(); } }
-  if (id === "terror") { ctx.globalAlpha = 0.9; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.moveTo(0, H); for (let x = 0; x <= W; x += 60) ctx.lineTo(x, H * 0.55 + Math.random() * 220); ctx.lineTo(W, H); ctx.closePath(); ctx.fill(); ctx.strokeStyle = pal.acc; ctx.lineWidth = 3; for (let i = 0; i < 9; i++) { ctx.globalAlpha = 0.35; const x = Math.random() * W, y = Math.random() * H * 0.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + rnd(-60, 60), y + rnd(120, 260)); ctx.stroke(); } }
-  if (id === "drama") { ctx.lineWidth = 2; for (let i = 0; i < 90; i++) { ctx.globalAlpha = 0.05 + Math.random() * 0.12; const x = Math.random() * W; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 30, H * (0.3 + Math.random() * 0.6)); ctx.stroke(); } }
-  if (id === "animacion") { const cols = [pal.acc, "#FF5C8A", "#7CFF9A", "#FFFFFF"]; for (let i = 0; i < 70; i++) { ctx.fillStyle = cols[i % cols.length]; ctx.globalAlpha = 0.5 + Math.random() * 0.5; ctx.beginPath(); ctx.arc(Math.random() * W, Math.random() * H * 0.7, 8 + Math.random() * 26, 0, 7); ctx.fill(); } }
-  if (id === "scifi") { ctx.lineWidth = 2; ctx.globalAlpha = 0.25; for (let i = 0; i <= 12; i++) { ctx.beginPath(); ctx.moveTo(W / 2 + (i - 6) * 60, H * 0.45); ctx.lineTo(W / 2 + (i - 6) * 400, H); ctx.stroke(); } for (let j = 0; j < 8; j++) { const y = H * 0.45 + j * j * 14; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); } ctx.globalAlpha = 0.9; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(W / 2, H * 0.36, 230, 0, 7); ctx.stroke(); }
+// Fondos con foto: cantidad de imágenes disponibles por género en public/fondos/<genero>-<n>.jpg (1080×1350).
+// 0 = usar solo motivos dibujados. Si una imagen no carga, cae al motivo dibujado.
+const FONDOS = { accion: 0, comedia: 0, terror: 0, drama: 0, animacion: 0, scifi: 0 };
+const N_MOTIVOS = 3;
+const R2 = (a, b) => a + Math.random() * (b - a);
+function motivo(ctx, id, W, H, pal, v = 0) {
+  ctx.save(); ctx.strokeStyle = pal.acc; ctx.fillStyle = pal.acc;
+  const burst = (x, y, r, a) => { const g = ctx.createRadialGradient(x, y, 10, x, y, r); g.addColorStop(0, pal.acc); g.addColorStop(1, "transparent"); ctx.globalAlpha = a; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.fillStyle = pal.acc; };
+  if (id === "accion") {
+    if (v === 0) { ctx.lineWidth = 6; for (let i = -10; i < 30; i++) { ctx.globalAlpha = 0.08 + (i % 3) * 0.05; ctx.beginPath(); ctx.moveTo(i * 80, 0); ctx.lineTo(i * 80 + 700, H); ctx.stroke(); } burst(W * 0.7, H * 0.42, 420, 0.55); }
+    if (v === 1) { burst(W / 2, H * 0.4, 520, 0.7); ctx.lineWidth = 3; for (let i = 0; i < 40; i++) { ctx.globalAlpha = 0.1 + Math.random() * 0.25; const a = Math.random() * Math.PI * 2; ctx.beginPath(); ctx.moveTo(W / 2 + Math.cos(a) * 120, H * 0.4 + Math.sin(a) * 120); ctx.lineTo(W / 2 + Math.cos(a) * R2(500, 900), H * 0.4 + Math.sin(a) * R2(500, 900)); ctx.stroke(); } }
+    if (v === 2) { ctx.lineWidth = 4; for (let i = 0; i < 26; i++) { ctx.globalAlpha = 0.06 + Math.random() * 0.14; const y = Math.random() * H * 0.8; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y + R2(-40, 40)); ctx.stroke(); } ctx.globalAlpha = 0.5; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(W * 0.62, H * 0.38, 260, 0, 7); ctx.stroke(); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(W * 0.62, H * 0.38, 340, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.moveTo(W * 0.62 - 420, H * 0.38); ctx.lineTo(W * 0.62 + 420, H * 0.38); ctx.moveTo(W * 0.62, H * 0.38 - 420); ctx.lineTo(W * 0.62, H * 0.38 + 420); ctx.stroke(); }
+  }
+  if (id === "comedia") {
+    if (v === 0) for (let i = 0; i < 40; i++) { ctx.globalAlpha = 0.08 + Math.random() * 0.12; ctx.beginPath(); ctx.arc(Math.random() * W, Math.random() * H * 0.75, 40 + Math.random() * 120, 0, 7); ctx.fill(); }
+    if (v === 1) { ctx.lineWidth = 60; for (let i = -6; i < 16; i++) { ctx.globalAlpha = 0.07; ctx.beginPath(); ctx.moveTo(i * 130, 0); ctx.lineTo(i * 130 + 500, H); ctx.stroke(); } for (let i = 0; i < 14; i++) { ctx.globalAlpha = 0.18 + Math.random() * 0.25; const x = Math.random() * W, y = Math.random() * H * 0.7, r = 20 + Math.random() * 40; ctx.beginPath(); ctx.moveTo(x, y + r); ctx.bezierCurveTo(x - r * 1.6, y - r * 0.4, x - r * 0.6, y - r * 1.4, x, y - r * 0.5); ctx.bezierCurveTo(x + r * 0.6, y - r * 1.4, x + r * 1.6, y - r * 0.4, x, y + r); ctx.fill(); } }
+    if (v === 2) { for (let i = 0; i < 160; i++) { ctx.globalAlpha = 0.25 + Math.random() * 0.5; ctx.fillRect(Math.random() * W, Math.random() * H * 0.8, 8 + Math.random() * 10, 16 + Math.random() * 14); } burst(W / 2, H * 0.3, 600, 0.35); }
+  }
+  if (id === "terror") {
+    if (v === 0) { ctx.globalAlpha = 0.9; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.moveTo(0, H); for (let x = 0; x <= W; x += 60) ctx.lineTo(x, H * 0.55 + Math.random() * 220); ctx.lineTo(W, H); ctx.closePath(); ctx.fill(); ctx.strokeStyle = pal.acc; ctx.lineWidth = 3; for (let i = 0; i < 9; i++) { ctx.globalAlpha = 0.35; const x = Math.random() * W, y = Math.random() * H * 0.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + R2(-60, 60), y + R2(120, 260)); ctx.stroke(); } }
+    if (v === 1) { for (let i = 0; i < 12; i++) { const g = ctx.createRadialGradient(Math.random() * W, H * 0.6 + Math.random() * H * 0.4, 20, W / 2, H * 0.8, 700); g.addColorStop(0, "rgba(120,120,130,.18)"); g.addColorStop(1, "transparent"); ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); } ctx.fillStyle = "#E8E8E8"; ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.arc(W * 0.7, H * 0.25, 170, 0, 7); ctx.fill(); ctx.fillStyle = pal.bg; ctx.globalAlpha = 0.95; ctx.beginPath(); ctx.arc(W * 0.76, H * 0.22, 150, 0, 7); ctx.fill(); }
+    if (v === 2) { ctx.strokeStyle = pal.acc; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.55; const rama = (x, y, a, l, d) => { if (d > 6 || l < 12) return; const nx = x + Math.cos(a) * l, ny = y + Math.sin(a) * l; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke(); rama(nx, ny, a + R2(-0.6, 0.6), l * 0.8, d + 1); if (Math.random() < 0.6) rama(nx, ny, a + R2(-1.2, 1.2), l * 0.6, d + 1); }; for (let i = 0; i < 5; i++) rama(Math.random() * W, 0, Math.PI / 2 + R2(-0.5, 0.5), 160, 0); }
+  }
+  if (id === "drama") {
+    if (v === 0) { ctx.lineWidth = 2; for (let i = 0; i < 90; i++) { ctx.globalAlpha = 0.05 + Math.random() * 0.12; const x = Math.random() * W; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 30, H * (0.3 + Math.random() * 0.6)); ctx.stroke(); } }
+    if (v === 1) { for (let i = 0; i < 9; i++) { ctx.globalAlpha = 0.05 + i * 0.02; ctx.fillRect(0, H * 0.15 + i * 60, W, 40 + i * 6); } burst(W * 0.5, H * 0.2, 500, 0.35); }
+    if (v === 2) { ctx.globalAlpha = 0.22; ctx.fillRect(W * 0.58, 0, 190, H * 0.62); ctx.fillRect(W * 0.8, 0, 190, H * 0.62); ctx.fillStyle = "#000"; ctx.globalAlpha = 0.5; ctx.fillRect(W * 0.58, H * 0.2, 420, 16); ctx.fillRect(W * 0.58, H * 0.42, 420, 16); }
+  }
+  if (id === "animacion") {
+    const cols = [pal.acc, "#FF5C8A", "#7CFF9A", "#FFFFFF"];
+    if (v === 0) for (let i = 0; i < 70; i++) { ctx.fillStyle = cols[i % cols.length]; ctx.globalAlpha = 0.5 + Math.random() * 0.5; ctx.beginPath(); ctx.arc(Math.random() * W, Math.random() * H * 0.7, 8 + Math.random() * 26, 0, 7); ctx.fill(); }
+    if (v === 1) for (let i = 0; i < 9; i++) { ctx.fillStyle = cols[i % cols.length]; ctx.globalAlpha = 0.55; ctx.beginPath(); ctx.arc(Math.random() * W, Math.random() * H * 0.6, 120 + Math.random() * 220, 0, 7); ctx.fill(); }
+    if (v === 2) for (let i = 0; i < 40; i++) { ctx.fillStyle = cols[i % cols.length]; ctx.globalAlpha = 0.6 + Math.random() * 0.4; const x = Math.random() * W, y = Math.random() * H * 0.7, r = 10 + Math.random() * 28; ctx.beginPath(); for (let k = 0; k < 10; k++) { const rr = k % 2 ? r * 0.45 : r, a = (k / 10) * Math.PI * 2 - Math.PI / 2; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); }
+  }
+  if (id === "scifi") {
+    if (v === 0) { ctx.lineWidth = 2; ctx.globalAlpha = 0.25; for (let i = 0; i <= 12; i++) { ctx.beginPath(); ctx.moveTo(W / 2 + (i - 6) * 60, H * 0.45); ctx.lineTo(W / 2 + (i - 6) * 400, H); ctx.stroke(); } for (let j = 0; j < 8; j++) { const y = H * 0.45 + j * j * 14; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); } ctx.globalAlpha = 0.9; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(W / 2, H * 0.36, 230, 0, 7); ctx.stroke(); }
+    if (v === 1) { ctx.fillStyle = "#FFF"; for (let i = 0; i < 400; i++) { ctx.globalAlpha = Math.random() * 0.9; const r = Math.random() * 2.2; ctx.beginPath(); ctx.arc(Math.random() * W, Math.random() * H, r, 0, 7); ctx.fill(); } const g = ctx.createRadialGradient(W * 0.72, H * 0.3, 40, W * 0.72, H * 0.3, 300); g.addColorStop(0, pal.acc); g.addColorStop(0.7, pal.bg2); g.addColorStop(1, "transparent"); ctx.globalAlpha = 0.85; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(W * 0.72, H * 0.3, 280, 0, 7); ctx.fill(); }
+    if (v === 2) { ctx.lineWidth = 1.5; ctx.globalAlpha = 0.35; const r = 60; for (let y = -r; y < H * 0.8; y += r * 1.5) for (let x = -r; x < W + r; x += r * 1.73) { const ox = ((y / (r * 1.5)) % 2) ? r * 0.87 : 0; ctx.beginPath(); for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; ctx.lineTo(x + ox + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.closePath(); ctx.stroke(); } burst(W * 0.4, H * 0.35, 460, 0.5); }
+  }
   ctx.restore();
 }
-function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true }) {
+function cargarFondo(id, v) {
+  return new Promise((res) => { if (!FONDOS[id]) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = `/fondos/${id}-${(v % FONDOS[id]) + 1}.jpg`; });
+}
+async function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true }) {
   const W = 1080, H = 1350, ctx = cv.getContext("2d"), pal = ficha.genero.pal, m = 64, ancho = W - 2 * m;
   cv.width = W; cv.height = H;
   const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, pal.bg2); g.addColorStop(1, pal.bg);
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  motivo(ctx, ficha.genero.id, W, H, pal);
+  const foto = await cargarFondo(ficha.genero.id, ficha.variante);
+  if (foto) {
+    const esc = Math.max(W / foto.width, H / foto.height), fw = foto.width * esc, fh = foto.height * esc;
+    ctx.drawImage(foto, (W - fw) / 2, (H - fh) / 2, fw, fh);
+    const velo = ctx.createLinearGradient(0, 0, 0, H); velo.addColorStop(0, "rgba(0,0,0,.35)"); velo.addColorStop(0.45, "rgba(0,0,0,0)"); velo.addColorStop(1, pal.bg);
+    ctx.fillStyle = velo; ctx.fillRect(0, 0, W, H);
+  } else motivo(ctx, ficha.genero.motivo || ficha.genero.id, W, H, pal, ficha.variante % N_MOTIVOS);
   const v = ctx.createRadialGradient(W / 2, H * 0.5, 300, W / 2, H * 0.5, 900); v.addColorStop(0, "transparent"); v.addColorStop(1, "rgba(0,0,0,.6)"); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
   grano(ctx, W, H);
   const D = `${DW} SIZEpx ${DISPLAY}`, R = `500 SIZEpx ${UI}`, I = `italic SIZEpx ${UI}`;
@@ -482,7 +566,7 @@ function Poster({ titulo, ficha, resultado, conResultado = true, etiqueta = "Com
   const [listo, setListo] = useState(false);
   useEffect(() => {
     let vivo = true;
-    const go = () => { if (vivo && ref.current) { dibujarPoster(ref.current, { titulo, ficha, resultado, conResultado }); setListo(true); } };
+    const go = () => { if (vivo && ref.current) dibujarPoster(ref.current, { titulo, ficha, resultado, conResultado }).then(() => vivo && setListo(true)); };
     if (document.fonts && document.fonts.load) Promise.all([document.fonts.load(`80px ${DISPLAY}`), document.fonts.load(`30px ${UI}`), document.fonts.load(`600 16px ${SERIF}`)]).then(go).catch(go); else go();
     return () => { vivo = false; };
   }, []);
@@ -506,6 +590,16 @@ function Poster({ titulo, ficha, resultado, conResultado = true, etiqueta = "Com
 // =====================================================================
 // APP
 // =====================================================================
+const FONDOS_INICIALES = 500;
+const PELIS_POR_TEMPORADA = 3;
+const TITULOS_PRODUCTOR = [
+  [1100, "Magnate de Hollywood", "Tenés estudio propio y un pase VIP vitalicio a la gala."],
+  [750, "Productor de peso", "El estudio te devuelve las llamadas antes del mediodía."],
+  [500, "Productor sólido", "Terminaste con lo que empezaste. En esta industria, eso es ganar."],
+  [180, "Sobreviviente", "Perdiste plata, pero seguís invitado a las fiestas."],
+  [0, "Productor en bancarrota", "El estudio te agradece los servicios prestados."],
+];
+
 export default function Productor() {
   const [paso, setPaso] = useState("portada");
   const [saliendo, setSaliendo] = useState(false);
@@ -514,47 +608,91 @@ export default function Productor() {
   const [spinId, setSpinId] = useState(0);
   const [girando, setGirando] = useState(false);
   const [girado, setGirado] = useState(false);
+  const [genero, setGenero] = useState(null);
   const [ficha, setFicha] = useState(null);
   const [revelado, setRevelado] = useState(0);
   const [resultado, setResultado] = useState(null);
   const [telon, setTelon] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [tenso, setTenso] = useState(null);
+  const [fondos, setFondos] = useState(FONDOS_INICIALES);
+  const [pelis, setPelis] = useState([]); // temporada
 
-  const darVuelta = () => { if (tenso !== null) return; setTenso(revelado); setTimeout(() => { setRevelado((r) => r + 1); setTenso(null); }, 1000); };
+  const nPeli = pelis.length + 1;
   const irA = (p, fn) => { setSaliendo(true); setTimeout(() => { fn && fn(); setPaso(p); setSaliendo(false); }, 240); };
-  const girar = () => { if (girando) return; setGirado(false); setGirando(true); setSIdx(Math.floor(Math.random() * SUSTANTIVOS.length)); setAIdx(Math.floor(Math.random() * ADJETIVOS.length)); setSpinId((s) => s + 1); };
+  const darVuelta = () => { if (tenso !== null) return; setTenso(revelado); setTimeout(() => { setRevelado((r) => r + 1); setTenso(null); }, 1000); };
+  const girar = () => {
+    if (girando) return;
+    // nunca repetir el título actual ni uno ya usado en la temporada
+    const usados = new Set([`${sIdx}-${aIdx}`, ...pelis.map((p) => p.clave)]);
+    let ns, na, intentos = 0;
+    do { ns = Math.floor(Math.random() * SUSTANTIVOS.length); na = Math.floor(Math.random() * ADJETIVOS.length); intentos++; } while (usados.has(`${ns}-${na}`) && intentos < 50);
+    setGirado(false); setGirando(true); setSIdx(ns); setAIdx(na); setSpinId((x) => x + 1);
+  };
   const titulo = `${SUSTANTIVOS[sIdx]} ${ADJETIVOS[aIdx]}`;
-  const repartir = () => irA("mazos", () => { const a1 = pick(ACTORES), a2 = pick(ACTRICES); setFicha({ genero: pick(GENEROS), protagonista: pick(PROTAGONISTAS), situacion: pick(SITUACIONES), director: pick(DIRECTORES), actor1: a1, actor2: a2, presupuesto: pick(PRESUPUESTOS) }); setRevelado(0); });
+  const elegirGenero = (g) => irA("ruleta", () => { setGenero(g); setGirado(false); });
+  const repartir = () => irA("mazos", () => { setFicha({ genero, protagonista: pick(PROTAGONISTAS), situacion: pick(SITUACIONES), director: pick(DIRECTORES), actor1: pick(ACTORES), actor2: pick(ACTRICES), presupuesto: null, variante: Math.floor(Math.random() * 12) }); setRevelado(0); });
   const mazos = ficha ? [
-    { nombre: "Género", valor: ficha.genero.nombre, sub: ficha.genero.tag, Icono: Clapperboard, IconoFrente: ICONO_GENERO[ficha.genero.id] },
     { nombre: "Protagonista", valor: ficha.protagonista, Icono: CircleUserRound },
     { nombre: "Conflicto", valor: ficha.situacion.texto, Icono: Swords },
     { nombre: "Dirige", valor: ficha.director.n, Icono: Video },
     { nombre: "Actor", valor: ficha.actor1.n, Icono: Star },
     { nombre: "Actriz", valor: ficha.actor2.n, Icono: (p) => <Star {...p} fill={p.color} /> },
-    { nombre: "Presupuesto", valor: ficha.presupuesto.nombre, sub: ficha.presupuesto.desc, Icono: Banknote },
   ] : [];
-  const lanzar = () => { setTelon(true); setTimeout(() => { setResultado(estrenar(ficha)); setPaso("poster"); setCopiado(false); }, 700); setTimeout(() => setTelon(false), 1250); };
-  const reiniciar = () => irA("ruleta", () => { setGirado(false); setFicha(null); setResultado(null); });
+  const irAPresupuesto = () => irA("presupuesto");
+  const lanzar = (pres) => {
+    if (costoDe(ficha, pres) > fondos) return; // nunca estrenar por encima de la caja
+    const f = { ...ficha, presupuesto: pres };
+    setFicha(f); setTelon(true);
+    setTimeout(() => { const r = estrenar(f); setResultado(r); setFondos((x) => Math.round(x - r.costo + r.recaudacion)); setPelis((ps) => [...ps, { titulo, clave: `${sIdx}-${aIdx}`, genero: f.genero.nombre, resultado: r.resultado, critica: r.critica }]); setPaso("poster"); setCopiado(false); }, 700);
+    setTimeout(() => setTelon(false), 1250);
+  };
+  const siguiente = () => {
+    const quebrado = fondos < Math.min(...PRESUPUESTOS.map((p) => p.base * 1.5));
+    if (pelis.length >= PELIS_POR_TEMPORADA || quebrado) irA("temporada");
+    else irA("genero", () => { setGirado(false); setFicha(null); setResultado(null); setGenero(null); });
+  };
+  const nuevaTemporada = () => irA("genero", () => { setFondos(FONDOS_INICIALES); setPelis([]); setGirado(false); setFicha(null); setResultado(null); setGenero(null); });
+  const rango = TITULOS_PRODUCTOR.find(([min]) => fondos >= min) || TITULOS_PRODUCTOR[TITULOS_PRODUCTOR.length - 1];
   const textoCompartir = () => { const r = resultado, f = ficha; const gano = r.resultado >= 0 ? `ganó ${M(r.resultado)}` : `perdió ${M(-r.resultado)}`; return `🎬 Produje "${titulo}"\n${f.genero.nombre} dirigida por ${f.director.n}, con ${f.actor1.n} y ${f.actor2.n}.\n${Esp(r.espectadores)} de espectadores, ${gano}.\nCrítica ${r.critica.toFixed(1)} · Público ${r.publico.toFixed(1)}\n${r.premio}\n${r.secuela}`; };
-  const compartir = async () => { const t = textoCompartir(); try { if (navigator.share) { await navigator.share({ text: t }); return; } } catch (e) {} try { await navigator.clipboard.writeText(t); setCopiado(true); } catch (e) {} };
+  const textoTemporada = () => `🎬 Mi temporada como productor: ${rango[1]}\n${pelis.map((p) => `${p.titulo} (${p.genero}): ${p.resultado >= 0 ? "ganó" : "perdió"} ${M(Math.abs(p.resultado))}`).join("\n")}\nCerré con ${M(fondos)} en caja.`;
+  const compartir = async (t) => { try { if (navigator.share) { await navigator.share({ text: t }); return; } } catch (e) {} try { await navigator.clipboard.writeText(t); setCopiado(true); } catch (e) {} };
   const sinopsis = ficha ? `${ficha.protagonista}. ${ficha.situacion.texto}. ${ficha.genero.tag}` : "";
-  const tituloVisible = girado || (paso !== "ruleta" && paso !== "portada");
-  const verResultado = () => irA("resultado");
-  const subMarq = paso === "ruleta" && !girado ? "Elegí el título" : ficha && revelado >= 1 ? ficha.genero.nombre : "En cartel";
+  const tituloVisible = girado || ["mazos", "presupuesto"].includes(paso);
+  const conMarquesina = ["ruleta", "mazos", "presupuesto"].includes(paso);
+  const subMarq = paso === "ruleta" && !girado ? `Elegí el título de su ${genero ? genero.nombre.toLowerCase() : "película"}` : genero ? genero.nombre : "En cartel";
 
   return (
     <div className="min-h-screen w-full flex justify-center relative overflow-hidden" style={{ background: `radial-gradient(ellipse 80% 50% at 50% 0%, #1E1708, ${NEGRO} 70%)`, color: MARFIL, fontFamily: UI }}>
       <style>{CSS}</style>
       {paso !== "portada" && <Rayos />}
       <div className="w-full max-w-md px-4 py-6 relative">
-        {paso === "portada" && <Portada onStart={() => irA("ruleta")} />}
+        {paso === "portada" && <Portada onStart={() => irA("genero")} />}
 
         {paso !== "portada" && (
           <>
-            {paso !== "poster" && paso !== "resultado" && <Marquesina encendida={tituloVisible} texto={tituloVisible ? titulo.toUpperCase() : "— — —"} sub={subMarq} />}
+            {/* franja de temporada */}
+            <div className="flex justify-between items-center mb-4 px-1" style={{ ...versal(10), color: ORO }}>
+              <span>{paso === "temporada" ? "Cierre de temporada" : `Película ${Math.min(nPeli, PELIS_POR_TEMPORADA)} de ${PELIS_POR_TEMPORADA}`}</span>
+              <span className="flex items-center gap-2"><Banknote size={14} strokeWidth={1.6} /> {M(fondos)} en caja</span>
+            </div>
+            {conMarquesina && <Marquesina encendida={tituloVisible} texto={tituloVisible ? titulo.toUpperCase() : "— — —"} sub={subMarq} />}
+
             <div className={saliendo ? "panel-out" : "panel"} key={paso}>
+              {paso === "genero" && (
+                <>
+                  <div className="text-center mb-1" style={{ ...versal(11), color: ORO }}>¿Qué película quiere hacer?</div>
+                  <Filete w={140} my={8} />
+                  <div className="grid grid-cols-3 gap-2 mt-4">
+                    {GENEROS.map((g, i) => { const Ic = ICONO_GENERO[g.id]; return (
+                      <button key={g.id} onClick={() => elegirGenero(g)} className="carta px-2 py-4 flex flex-col items-center gap-2 text-center" style={{ animationDelay: `${i * 50}ms`, background: LACA, border: `1px solid ${ORO}`, boxShadow: `inset 0 0 0 3px ${LACA}, inset 0 0 0 4px ${ORO}55`, color: MARFIL, cursor: "pointer", minHeight: 96 }}>
+                        <Ic size={26} color={ORO} strokeWidth={1.5} />
+                        <span style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 11.5, letterSpacing: ".03em", lineHeight: 1.2 }}>{g.nombre}</span>
+                      </button>); })}
+                  </div>
+                </>
+              )}
+
               {paso === "ruleta" && (
                 <>
                   <div className="flex gap-4">
@@ -563,7 +701,7 @@ export default function Productor() {
                   </div>
                   <div className="flex gap-3 mt-6">
                     {girado
-                      ? <><BotonNegro onClick={girar} className="flex-1"><RefreshCw size={15} strokeWidth={1.8} /> Otra vez</BotonNegro><BotonOro onClick={repartir} className="flex-1 panel"><Film size={16} strokeWidth={1.8} /> Armar la película</BotonOro></>
+                      ? <><BotonNegro onClick={girar} className="flex-1"><RefreshCw size={15} strokeWidth={1.8} /> Otra vez</BotonNegro><BotonOro onClick={repartir} className="flex-1 panel"><Film size={16} strokeWidth={1.8} /> Preproducción</BotonOro></>
                       : <BotonOro onClick={girar} disabled={girando} className="w-full"><RefreshCw size={16} strokeWidth={1.8} /> {girando ? "Girando" : "Girar la ruleta"}</BotonOro>}
                   </div>
                 </>
@@ -581,10 +719,32 @@ export default function Productor() {
                       <div className="panel">
                         <Filete w={160} my={6} />
                         <p className="text-center" style={{ fontSize: 15, lineHeight: 1.55, margin: "10px 0 16px", fontStyle: "italic", color: MARFIL }}>{sinopsis}</p>
-                        <BotonOro onClick={lanzar} grande className="w-full estrenar"><Clapperboard size={22} strokeWidth={1.8} /> Estrenar</BotonOro>
+                        <BotonOro onClick={irAPresupuesto} grande className="w-full"><Banknote size={22} strokeWidth={1.8} /> Decidir el presupuesto</BotonOro>
                       </div>
                     )}
                   </div>
+                </>
+              )}
+
+              {paso === "presupuesto" && ficha && (
+                <>
+                  <div className="text-center mb-1" style={{ ...versal(11), color: ORO }}>¿Cuánto le pone a esta película?</div>
+                  <Filete w={140} my={8} />
+                  <p className="text-center" style={{ fontSize: 13, color: GRIS, fontStyle: "italic", marginBottom: 14 }}>Con {ficha.director.n}, {ficha.actor1.n} y {ficha.actor2.n} en {ficha.genero.nombre.toLowerCase()}.</p>
+                  <div className="flex flex-col gap-3">
+                    {PRESUPUESTOS.map((pr, i) => { const c = costoDe(ficha, pr); const puede = c <= fondos; const minimo = PRESUPUESTOS[0].base * 1.5 + 3 * PRESUPUESTOS[0].factor * 1.5; const ultima = pelis.length >= PELIS_POR_TEMPORADA - 1; const todoONada = puede && fondos - c < minimo; return (
+                      <button key={pr.nombre} onClick={() => puede && lanzar(pr)} disabled={!puede} className="carta text-left px-4 py-3 flex items-center gap-3" style={{ animationDelay: `${i * 70}ms`, background: puede ? LACA : NEGRO, border: `1px solid ${puede ? ORO : "#3A3320"}`, boxShadow: puede ? `inset 0 0 0 3px ${LACA}, inset 0 0 0 4px ${ORO}55` : "none", color: puede ? MARFIL : "#5C5642", cursor: puede ? "pointer" : "default", opacity: puede ? 1 : 0.6 }}>
+                        <div className="flex-1">
+                          <div style={{ ...versal(12), color: puede ? ORO_C : "#5C5642" }}>{pr.nombre}</div>
+                          <div style={{ fontSize: 12, color: GRIS, fontStyle: "italic", marginTop: 2 }}>{pr.desc}</div>
+                        </div>
+                        <div className="text-right">
+                          <div style={{ fontFamily: DISPLAY, fontWeight: DW, fontSize: 22, color: puede ? MARFIL : "#5C5642" }}>{M(c)}</div>
+                          <div style={{ fontSize: 11, color: todoONada ? ROJO : GRIS, fontWeight: todoONada ? 700 : 400 }}>{!puede ? "no alcanza" : todoONada ? (ultima ? "Se juega toda la caja en la última" : "Todo o nada: si pierde, se acabó") : `quedan ${M(fondos - c)}`}</div>
+                        </div>
+                      </button>); })}
+                  </div>
+                  <p className="text-center mt-4" style={{ fontSize: 12, color: GRIS, fontStyle: "italic" }}>Incluye producción y marketing. Lo que recaude vuelve a la caja.</p>
                 </>
               )}
 
@@ -592,7 +752,7 @@ export default function Productor() {
                 <>
                   <div className="text-center mb-4" style={{ ...versal(11), color: ORO }}>Su película está en cartel</div>
                   <Poster titulo={titulo} ficha={ficha} resultado={resultado} conResultado={false} />
-                  <BotonNegro onClick={verResultado} className="w-full mt-3"><Ticket size={15} strokeWidth={1.8} /> Ver cómo le fue</BotonNegro>
+                  <BotonNegro onClick={() => irA("resultado")} className="w-full mt-3"><Ticket size={15} strokeWidth={1.8} /> Ver cómo le fue</BotonNegro>
                 </>
               )}
 
@@ -615,17 +775,46 @@ export default function Productor() {
                       <p className="flex items-start gap-2"><Award size={16} color={resultado.nivel > 0 ? ORO_O : resultado.nivel < 0 ? ROJO : "#9A9A9A"} strokeWidth={1.8} style={{ marginTop: 2, flexShrink: 0 }} />{resultado.premio}</p>
                       {resultado.premios.length > 0 && (
                         <div className="flex flex-col gap-1 my-1 py-2 px-3" style={{ borderTop: `1px solid ${ORO}55`, borderBottom: `1px solid ${ORO}55` }}>
-                          {resultado.premios.map((pr) => <div key={pr} className="flex items-center gap-2" style={{ fontFamily: SERIF, fontSize: 13, fontWeight: 600, letterSpacing: ".04em", color: resultado.nivel < 0 ? ROJO : ORO_O }}><Estatuilla h={22} color={resultado.nivel < 0 ? ROJO : ORO} />{pr}</div>)}
+                          {resultado.premios.map((pr) => <div key={pr} className="flex items-center gap-2" style={{ fontFamily: SERIF, fontSize: 13, fontWeight: 600, letterSpacing: ".04em", color: resultado.nivel < 0 ? ROJO : pr.toLowerCase().includes("cóndor") || pr.toLowerCase().includes("premio sur") ? "#55555E" : ORO_O }}><IconoPremio texto={pr} h={24} />{pr}</div>)}
                         </div>
                       )}
                       <p className="flex items-start gap-2"><Film size={16} color="#6A6A6A" strokeWidth={1.8} style={{ marginTop: 2, flexShrink: 0 }} />{resultado.secuela}</p>
                       {resultado.notas.map((n) => <p key={n} style={{ fontStyle: "italic", color: "#4A4A4A" }}>{n}</p>)}
                     </div>
+                    <div className="text-center mt-4 pt-3" style={{ borderTop: `1px solid ${ORO}55`, ...versal(10), color: ORO_O }}>Caja del productor: {M(fondos)}</div>
                   </Marco>
                   <div className="mt-4"><Poster titulo={titulo} ficha={ficha} resultado={resultado} conResultado={true} etiqueta="Compartir póster con resultado" oculto /></div>
                   <div className="flex gap-3 mt-3">
-                    <BotonNegro onClick={compartir} className="flex-1"><Share2 size={15} strokeWidth={1.8} /> {copiado ? "Copiado" : "Compartir texto"}</BotonNegro>
-                    <BotonNegro onClick={reiniciar} className="flex-1"><RefreshCw size={15} strokeWidth={1.8} /> Producir otra</BotonNegro>
+                    <BotonNegro onClick={() => compartir(textoCompartir())} className="flex-1"><Share2 size={15} strokeWidth={1.8} /> {copiado ? "Copiado" : "Compartir texto"}</BotonNegro>
+                    <BotonOro onClick={siguiente} className="flex-1">{pelis.length >= PELIS_POR_TEMPORADA ? "Cerrar temporada" : "Siguiente película"}</BotonOro>
+                  </div>
+                </>
+              )}
+
+              {paso === "temporada" && (
+                <>
+                  <Marco fondo={MARFIL} pad={20} style={{ color: NEGRO }} className="text-center">
+                    <div style={{ ...versal(10), color: ORO_O }}>Su temporada como productor</div>
+                    <Filete w={110} my={8} />
+                    <Estatuilla h={90} cls="mx-auto mt-2 destello" color={fondos < 120 ? ROJO : undefined} />
+                    <div className="mt-3" style={{ fontFamily: SERIF, fontWeight: 700, fontSize: 22, letterSpacing: ".06em" }}>{rango[1]}</div>
+                    <p style={{ fontSize: 13, color: "#5A5A5A", fontStyle: "italic", marginTop: 4 }}>{rango[2]}</p>
+                    <div className="mt-4 flex flex-col gap-2 text-left">
+                      {pelis.map((p, i) => (
+                        <div key={i} className="flex items-center justify-between gap-3" style={{ borderTop: `1px solid ${ORO}55`, paddingTop: 8 }}>
+                          <div><div style={{ fontFamily: DISPLAY, fontWeight: DW, fontSize: 18 }}>{p.titulo.toUpperCase()}</div><div style={{ fontSize: 12, color: "#6A6A6A" }}>{p.genero} · crítica {p.critica.toFixed(1)}</div></div>
+                          <div style={{ fontFamily: DISPLAY, fontWeight: DW, fontSize: 18, color: p.resultado >= 0 ? "#2F6B3A" : ROJO }}>{p.resultado >= 0 ? "+" : "−"}{M(Math.abs(p.resultado))}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${ORO}` }}>
+                      <div style={{ ...versal(9), color: "#6A6A6A" }}>Empezó con {M(FONDOS_INICIALES)} · cerró con</div>
+                      <div style={{ fontFamily: DISPLAY, fontWeight: DW, fontSize: 34, color: fondos >= FONDOS_INICIALES ? "#2F6B3A" : ROJO }}>{M(fondos)}</div>
+                    </div>
+                  </Marco>
+                  <div className="flex gap-3 mt-4">
+                    <BotonNegro onClick={() => compartir(textoTemporada())} className="flex-1"><Share2 size={15} strokeWidth={1.8} /> {copiado ? "Copiado" : "Compartir"}</BotonNegro>
+                    <BotonOro onClick={nuevaTemporada} className="flex-1"><RefreshCw size={15} strokeWidth={1.8} /> Nueva temporada</BotonOro>
                   </div>
                 </>
               )}
