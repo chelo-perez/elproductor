@@ -274,10 +274,10 @@ function Marco({ children, className = "", style = {}, fondo = LACA, pad = 16 })
     </div>
   );
 }
-function BotonOro({ children, onClick, disabled, className = "", grande }) {
+function BotonOro({ children, onClick, disabled, className = "", grande, style = {} }) {
   return (
     <button onClick={onClick} disabled={disabled} className={`flex items-center justify-center gap-2 ${className}`}
-      style={{ ...versal(grande ? 18 : 13), background: GOLD, color: NEGRO, padding: grande ? "18px 20px" : "14px 16px", border: "none", boxShadow: `0 1px 0 ${ORO_C} inset, 0 8px 22px rgba(212,169,61,.25)`, opacity: disabled ? 0.5 : 1, transition: "all .3s" }}>
+      style={{ ...versal(grande ? 18 : 13), background: GOLD, color: NEGRO, padding: grande ? "18px 20px" : "14px 16px", border: "none", boxShadow: `0 1px 0 ${ORO_C} inset, 0 8px 22px rgba(212,169,61,.25)`, opacity: disabled ? 0.5 : 1, transition: "all .3s", ...style }}>
       {children}
     </button>
   );
@@ -345,6 +345,10 @@ function Portada({ onStart }) {
         </h1>
         <Filete w={180} my={18} />
         <p style={{ fontFamily: UI, fontSize: 15, color: MARFIL, maxWidth: 260, lineHeight: 1.5, fontStyle: "italic" }}>Girá el título, dá vuelta las cartas y estrená la película que nadie pidió.</p>
+        <div className="mt-5 px-4 py-3" style={{ border: `1px solid ${ORO}55`, maxWidth: 300 }}>
+          <div style={{ ...versal(9), color: ORO }}>Cómo se juega</div>
+          <p style={{ fontFamily: UI, fontSize: 13, color: MARFIL, lineHeight: 1.5, marginTop: 6 }}>Una temporada son <b>tres películas</b> con una caja de <b>{M(FONDOS_INICIALES)}</b>. Vos elegís el género y cuánto arriesgar en cada una; el elenco lo reparte la suerte. Lo que recaudan vuelve a la caja.</p>
+        </div>
         <Estatuilla cls="mt-8 destello" />
         <div className="mt-8" style={{ ...versal(11), color: ORO_C }}>Tocá para entrar</div>
       </div>
@@ -510,7 +514,7 @@ function motivo(ctx, id, W, H, pal, v = 0) {
 function cargarFondo(id, v) {
   return new Promise((res) => { if (!FONDOS[id]) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = `/fondos/${id}-${(v % FONDOS[id]) + 1}.jpg`; });
 }
-async function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true }) {
+async function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true, productor = "" }) {
   const W = 1080, H = 1350, ctx = cv.getContext("2d"), pal = ficha.genero.pal, m = 64, ancho = W - 2 * m;
   cv.width = W; cv.height = H;
   const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, pal.bg2); g.addColorStop(1, pal.bg);
@@ -558,15 +562,65 @@ async function dibujarPoster(cv, { titulo, ficha, resultado, conResultado = true
   }
   // marco dorado y marca del juego
   ctx.strokeStyle = ORO; ctx.lineWidth = 3; ctx.strokeRect(14, 14, W - 28, H - 28); ctx.lineWidth = 1; ctx.strokeRect(24, 24, W - 48, H - 48);
-  ctx.fillStyle = ORO_C; ctx.font = `600 16px ${SERIF}`; if ("letterSpacing" in ctx) ctx.letterSpacing = "5px"; ctx.fillText("EL PRODUCTOR", W / 2, 46); if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+  ctx.fillStyle = ORO_C; ctx.font = `600 16px ${SERIF}`; if ("letterSpacing" in ctx) ctx.letterSpacing = "5px"; ctx.fillText(productor ? `${productor.toUpperCase()} PRESENTA` : "EL PRODUCTOR", W / 2, 46); if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
 }
 
-function Poster({ titulo, ficha, resultado, conResultado = true, etiqueta = "Compartir el póster", oculto = false }) {
+const URL_JUEGO = "gaming.masfacil.com.ar";
+async function dibujarTemporada(cv, { pelis, fondos, rango, productor = "" }) {
+  const W = 1080, H = 1350, ctx = cv.getContext("2d");
+  cv.width = W; cv.height = H;
+  ctx.fillStyle = "#070707"; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.translate(W / 2, 300); for (let i = 0; i < 36; i++) { const a = (i / 36) * Math.PI * 2, b = a + Math.PI / 36; const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1400); g.addColorStop(0, "rgba(246,230,180,.16)"); g.addColorStop(1, "rgba(212,169,61,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * 1400, Math.sin(a) * 1400); ctx.lineTo(Math.cos(b) * 1400, Math.sin(b) * 1400); ctx.closePath(); ctx.fill(); } ctx.restore();
+  ctx.strokeStyle = ORO; ctx.lineWidth = 3; ctx.strokeRect(22, 22, W - 44, H - 44); ctx.lineWidth = 1; ctx.strokeRect(34, 34, W - 68, H - 68);
+  const oro = ctx.createLinearGradient(0, 0, W, 0); oro.addColorStop(0, ORO_O); oro.addColorStop(0.35, ORO_C); oro.addColorStop(0.6, ORO); oro.addColorStop(1, ORO_O);
+  const ls = (v) => { if ("letterSpacing" in ctx) ctx.letterSpacing = v; };
+  ctx.textAlign = "center";
+  ls("8px"); ctx.fillStyle = ORO; ctx.font = `600 22px ${SERIF}`; ctx.fillText(productor ? `LA TEMPORADA DE ${productor.toUpperCase()}` : "EL PRODUCTOR · MI TEMPORADA", W / 2, 96); ls("0px");
+  const pw = 300, ph = 375, gap = 30, x0 = (W - (pw * 3 + gap * 2)) / 2, y0 = 150;
+  for (let i = 0; i < pelis.length; i++) {
+    const off = document.createElement("canvas");
+    await dibujarPoster(off, { titulo: pelis[i].titulo, ficha: pelis[i].ficha, resultado: pelis[i].res, conResultado: false, productor });
+    const x = x0 + i * (pw + gap);
+    ctx.save(); ctx.shadowColor = "rgba(0,0,0,.7)"; ctx.shadowBlur = 40; ctx.shadowOffsetY = 18; ctx.fillStyle = "#000"; ctx.fillRect(x, y0, pw, ph); ctx.restore();
+    ctx.drawImage(off, x, y0, pw, ph);
+    ctx.strokeStyle = ORO; ctx.lineWidth = 3; ctx.strokeRect(x, y0, pw, ph);
+    const r = pelis[i].resultado;
+    ctx.fillStyle = r >= 0 ? "#7FD39A" : "#F07C88"; ctx.font = `${DW} 34px ${DISPLAY}`; ctx.fillText(`${r >= 0 ? "+" : "−"} ${M(Math.abs(r))}`, x + pw / 2, y0 + ph + 52);
+    ctx.fillStyle = MARFIL; ctx.font = `500 18px ${UI}`; ctx.fillText(pelis[i].genero, x + pw / 2, y0 + ph + 82);
+  }
+  ctx.fillStyle = ORO; ctx.fillRect(W / 2 - 200, 720, 400, 1); ctx.save(); ctx.translate(W / 2, 720); ctx.rotate(Math.PI / 4); ctx.fillRect(-7, -7, 14, 14); ctx.restore();
+  ls("4px"); ctx.fillStyle = ORO; ctx.font = `600 20px ${SERIF}`; ctx.fillText(productor ? `${productor.toUpperCase()} CERRÓ LA TEMPORADA COMO` : "CERRÉ LA TEMPORADA COMO", W / 2, 790);
+  const t = rango[1].toUpperCase(); ctx.fillStyle = oro; ctx.font = `700 ${fitFont(ctx, t, `700 SIZEpx ${SERIF}`, W - 160, 74, 40)}px ${SERIF}`; ctx.fillText(t, W / 2, 890); ls("0px");
+  ctx.fillStyle = MARFIL; ctx.font = `italic 28px ${UI}`; ctx.fillText(rango[2], W / 2, 950);
+  ls("5px"); ctx.fillStyle = ORO; ctx.font = `600 18px ${SERIF}`; ctx.fillText(`EMPECÉ CON ${M(FONDOS_INICIALES).toUpperCase()}`, W / 2, 1050); ls("0px");
+  ctx.fillStyle = fondos >= FONDOS_INICIALES ? "#7FD39A" : "#F07C88"; ctx.font = `${DW} 110px ${DISPLAY}`; ctx.fillText(M(fondos), W / 2, 1160);
+  ctx.fillStyle = MARFIL; ctx.font = `500 22px ${UI}`; ctx.fillText("EN CAJA", W / 2, 1200);
+  ls("4px"); ctx.fillStyle = ORO_C; ctx.font = `600 20px ${SERIF}`; ctx.fillText(`¿TE ANIMÁS? ${URL_JUEGO.toUpperCase()}`, W / 2, 1285); ls("0px");
+}
+function PosterTemporada({ pelis, fondos, rango, productor = "" }) {
+  const ref = useRef(null);
+  const [listo, setListo] = useState(false);
+  useEffect(() => { let vivo = true; const go = () => { if (vivo && ref.current) dibujarTemporada(ref.current, { pelis, fondos, rango, productor }).then(() => vivo && setListo(true)); }; if (document.fonts && document.fonts.load) Promise.all([document.fonts.load(`80px ${DISPLAY}`), document.fonts.load(`600 16px ${SERIF}`)]).then(go).catch(go); else go(); return () => { vivo = false; }; }, []);
+  const compartir = async () => {
+    ref.current.toBlob(async (blob) => {
+      const file = new File([blob], "mi-temporada.png", { type: "image/png" });
+      try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "Mi temporada como productor", text: `${productor || "Cerré"} ${productor ? "cerró" : ""} la temporada como ${rango[1]}. ¿Te animás? https://${URL_JUEGO}` }); return; } } catch (e) {}
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
+    }, "image/png");
+  };
+  return (
+    <div className="panel">
+      <div style={{ padding: 4, background: GOLD }}><canvas ref={ref} className="w-full block" style={{ aspectRatio: "4 / 5", opacity: listo ? 1 : 0, transition: "opacity .5s" }} /></div>
+      <BotonOro onClick={compartir} className="w-full mt-3"><ImageDown size={18} strokeWidth={1.8} /> Compartir mi temporada</BotonOro>
+    </div>
+  );
+}
+function Poster({ titulo, ficha, resultado, conResultado = true, etiqueta = "Compartir el póster", oculto = false, productor = "" }) {
   const ref = useRef(null);
   const [listo, setListo] = useState(false);
   useEffect(() => {
     let vivo = true;
-    const go = () => { if (vivo && ref.current) dibujarPoster(ref.current, { titulo, ficha, resultado, conResultado }).then(() => vivo && setListo(true)); };
+    const go = () => { if (vivo && ref.current) dibujarPoster(ref.current, { titulo, ficha, resultado, conResultado, productor }).then(() => vivo && setListo(true)); };
     if (document.fonts && document.fonts.load) Promise.all([document.fonts.load(`80px ${DISPLAY}`), document.fonts.load(`30px ${UI}`), document.fonts.load(`600 16px ${SERIF}`)]).then(go).catch(go); else go();
     return () => { vivo = false; };
   }, []);
@@ -617,6 +671,14 @@ export default function Productor() {
   const [tenso, setTenso] = useState(null);
   const [fondos, setFondos] = useState(FONDOS_INICIALES);
   const [pelis, setPelis] = useState([]); // temporada
+  const [confirmarSalida, setConfirmarSalida] = useState(false);
+  const [nombre, setNombre] = useState(() => { try { return localStorage.getItem("productor") || ""; } catch (e) { return ""; } });
+  const [nombreTmp, setNombreTmp] = useState(nombre);
+  const guardarNombre = () => { const n = nombreTmp.trim().slice(0, 24); setNombre(n); try { localStorage.setItem("productor", n); } catch (e) {} irA("genero"); };
+  const productor = nombre || "Productor anónimo";
+  const enCurso = !["portada", "nombre", "temporada"].includes(paso) && pelis.length < PELIS_POR_TEMPORADA;
+  useEffect(() => { if (!enCurso) return; const h = (e) => { e.preventDefault(); e.returnValue = ""; }; window.addEventListener("beforeunload", h); return () => window.removeEventListener("beforeunload", h); }, [enCurso]);
+  const abandonar = () => { setConfirmarSalida(false); irA("portada", () => { setFondos(FONDOS_INICIALES); setPelis([]); setGirado(false); setFicha(null); setResultado(null); setGenero(null); }); };
 
   const nPeli = pelis.length + 1;
   const irA = (p, fn) => { setSaliendo(true); setTimeout(() => { fn && fn(); setPaso(p); setSaliendo(false); }, 240); };
@@ -644,7 +706,7 @@ export default function Productor() {
     if (costoDe(ficha, pres) > fondos) return; // nunca estrenar por encima de la caja
     const f = { ...ficha, presupuesto: pres };
     setFicha(f); setTelon(true);
-    setTimeout(() => { const r = estrenar(f); setResultado(r); setFondos((x) => Math.round(x - r.costo + r.recaudacion)); setPelis((ps) => [...ps, { titulo, clave: `${sIdx}-${aIdx}`, genero: f.genero.nombre, resultado: r.resultado, critica: r.critica }]); setPaso("poster"); setCopiado(false); }, 700);
+    setTimeout(() => { const r = estrenar(f); setResultado(r); setFondos((x) => Math.round(x - r.costo + r.recaudacion)); setPelis((ps) => [...ps, { titulo, clave: `${sIdx}-${aIdx}`, genero: f.genero.nombre, resultado: r.resultado, critica: r.critica, ficha: f, res: r }]); setPaso("poster"); setCopiado(false); }, 700);
     setTimeout(() => setTelon(false), 1250);
   };
   const siguiente = () => {
@@ -654,8 +716,8 @@ export default function Productor() {
   };
   const nuevaTemporada = () => irA("genero", () => { setFondos(FONDOS_INICIALES); setPelis([]); setGirado(false); setFicha(null); setResultado(null); setGenero(null); });
   const rango = TITULOS_PRODUCTOR.find(([min]) => fondos >= min) || TITULOS_PRODUCTOR[TITULOS_PRODUCTOR.length - 1];
-  const textoCompartir = () => { const r = resultado, f = ficha; const gano = r.resultado >= 0 ? `ganó ${M(r.resultado)}` : `perdió ${M(-r.resultado)}`; return `🎬 Produje "${titulo}"\n${f.genero.nombre} dirigida por ${f.director.n}, con ${f.actor1.n} y ${f.actor2.n}.\n${Esp(r.espectadores)} de espectadores, ${gano}.\nCrítica ${r.critica.toFixed(1)} · Público ${r.publico.toFixed(1)}\n${r.premio}\n${r.secuela}`; };
-  const textoTemporada = () => `🎬 Mi temporada como productor: ${rango[1]}\n${pelis.map((p) => `${p.titulo} (${p.genero}): ${p.resultado >= 0 ? "ganó" : "perdió"} ${M(Math.abs(p.resultado))}`).join("\n")}\nCerré con ${M(fondos)} en caja.`;
+  const textoCompartir = () => { const r = resultado, f = ficha; const gano = r.resultado >= 0 ? `ganó ${M(r.resultado)}` : `perdió ${M(-r.resultado)}`; return `🎬 ${productor} presenta "${titulo}"\n${f.genero.nombre} dirigida por ${f.director.n}, con ${f.actor1.n} y ${f.actor2.n}.\n${Esp(r.espectadores)} de espectadores, ${gano}.\nCrítica ${r.critica.toFixed(1)} · Público ${r.publico.toFixed(1)}\n${r.premio}\n${r.secuela}\nhttps://${URL_JUEGO}`; };
+  const textoTemporada = () => `🎬 Temporada de ${productor}: ${rango[1]}\n${pelis.map((p) => `${p.titulo} (${p.genero}): ${p.resultado >= 0 ? "ganó" : "perdió"} ${M(Math.abs(p.resultado))}`).join("\n")}\nCerré con ${M(fondos)} en caja.\n¿Te animás? https://${URL_JUEGO}`;
   const compartir = async (t) => { try { if (navigator.share) { await navigator.share({ text: t }); return; } } catch (e) {} try { await navigator.clipboard.writeText(t); setCopiado(true); } catch (e) {} };
   const sinopsis = ficha ? `${ficha.protagonista}. ${ficha.situacion.texto}. ${ficha.genero.tag}` : "";
   const tituloVisible = girado || ["mazos", "presupuesto"].includes(paso);
@@ -667,15 +729,37 @@ export default function Productor() {
       <style>{CSS}</style>
       {paso !== "portada" && <Rayos />}
       <div className="w-full max-w-md px-4 py-6 relative">
-        {paso === "portada" && <Portada onStart={() => irA("genero")} />}
+        {paso === "portada" && <Portada onStart={() => irA("nombre")} />}
 
-        {paso !== "portada" && (
+        {paso === "nombre" && (
+          <div className="panel flex flex-col items-center text-center" style={{ marginTop: "12vh" }}>
+            <Estatuilla h={70} />
+            <div className="mt-6" style={{ ...versal(11), color: ORO }}>¿Cómo se llama el productor?</div>
+            <Filete w={140} my={10} />
+            <input value={nombreTmp} onChange={(e) => setNombreTmp(e.target.value)} onKeyDown={(e) => e.key === "Enter" && guardarNombre()} maxLength={24} placeholder="Tu nombre" autoFocus
+              className="w-full text-center mt-2" style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 24, letterSpacing: ".06em", color: MARFIL, background: NEGRO, border: `1px solid ${ORO}`, boxShadow: `inset 0 0 0 3px ${NEGRO}, inset 0 0 0 4px ${ORO}55`, padding: "14px 16px", outline: "none", maxWidth: 320 }} />
+            <p style={{ fontSize: 12, color: GRIS, fontStyle: "italic", marginTop: 10 }}>Así va a firmar los pósters y los resultados que compartas.</p>
+            <BotonOro onClick={guardarNombre} className="w-full mt-6" style={{ maxWidth: 320 }}>{nombreTmp.trim() ? "Empezar la temporada" : "Seguir como anónimo"}</BotonOro>
+          </div>
+        )}
+
+        {!["portada", "nombre"].includes(paso) && (
           <>
             {/* franja de temporada */}
             <div className="flex justify-between items-center mb-4 px-1" style={{ ...versal(10), color: ORO }}>
-              <span>{paso === "temporada" ? "Cierre de temporada" : `Película ${Math.min(nPeli, PELIS_POR_TEMPORADA)} de ${PELIS_POR_TEMPORADA}`}</span>
+              <span>{productor} · {paso === "temporada" ? "cierre" : `película ${Math.min(nPeli, PELIS_POR_TEMPORADA)} de ${PELIS_POR_TEMPORADA}`}</span>
               <span className="flex items-center gap-2"><Banknote size={14} strokeWidth={1.6} /> {M(fondos)} en caja</span>
             </div>
+            {enCurso && !confirmarSalida && <button onClick={() => setConfirmarSalida(true)} className="block mx-auto mb-4" style={{ fontFamily: UI, fontSize: 12, color: GRIS, background: "none", border: "none", textDecoration: "underline", cursor: "pointer" }}>Abandonar la temporada</button>}
+            {confirmarSalida && (
+              <Marco fondo={LACA} pad={14} className="mb-4 text-center panel">
+                <p style={{ fontSize: 14, color: MARFIL, lineHeight: 1.5 }}>Te {PELIS_POR_TEMPORADA - pelis.length === 1 ? "queda una película" : `quedan ${PELIS_POR_TEMPORADA - pelis.length} películas`} por producir y {M(fondos)} en caja. Si salís ahora, la temporada se pierde.</p>
+                <div className="flex gap-3 mt-3">
+                  <BotonNegro onClick={abandonar} className="flex-1">Salir igual</BotonNegro>
+                  <BotonOro onClick={() => setConfirmarSalida(false)} className="flex-1">Seguir produciendo</BotonOro>
+                </div>
+              </Marco>
+            )}
             {conMarquesina && <Marquesina encendida={tituloVisible} texto={tituloVisible ? titulo.toUpperCase() : "— — —"} sub={subMarq} />}
 
             <div className={saliendo ? "panel-out" : "panel"} key={paso}>
@@ -751,7 +835,7 @@ export default function Productor() {
               {paso === "poster" && resultado && (
                 <>
                   <div className="text-center mb-4" style={{ ...versal(11), color: ORO }}>Su película está en cartel</div>
-                  <Poster titulo={titulo} ficha={ficha} resultado={resultado} conResultado={false} />
+                  <Poster titulo={titulo} ficha={ficha} resultado={resultado} conResultado={false} productor={nombre} />
                   <BotonNegro onClick={() => irA("resultado")} className="w-full mt-3"><Ticket size={15} strokeWidth={1.8} /> Ver cómo le fue</BotonNegro>
                 </>
               )}
@@ -783,7 +867,7 @@ export default function Productor() {
                     </div>
                     <div className="text-center mt-4 pt-3" style={{ borderTop: `1px solid ${ORO}55`, ...versal(10), color: ORO_O }}>Caja del productor: {M(fondos)}</div>
                   </Marco>
-                  <div className="mt-4"><Poster titulo={titulo} ficha={ficha} resultado={resultado} conResultado={true} etiqueta="Compartir póster con resultado" oculto /></div>
+                  <div className="mt-4"><Poster titulo={titulo} ficha={ficha} resultado={resultado} conResultado={true} etiqueta="Compartir póster con resultado" oculto productor={nombre} /></div>
                   <div className="flex gap-3 mt-3">
                     <BotonNegro onClick={() => compartir(textoCompartir())} className="flex-1"><Share2 size={15} strokeWidth={1.8} /> {copiado ? "Copiado" : "Compartir texto"}</BotonNegro>
                     <BotonOro onClick={siguiente} className="flex-1">{pelis.length >= PELIS_POR_TEMPORADA ? "Cerrar temporada" : "Siguiente película"}</BotonOro>
@@ -793,7 +877,8 @@ export default function Productor() {
 
               {paso === "temporada" && (
                 <>
-                  <Marco fondo={MARFIL} pad={20} style={{ color: NEGRO }} className="text-center">
+                  <PosterTemporada pelis={pelis} fondos={fondos} rango={rango} productor={nombre} />
+                  <Marco fondo={MARFIL} pad={20} style={{ color: NEGRO }} className="text-center mt-5">
                     <div style={{ ...versal(10), color: ORO_O }}>Su temporada como productor</div>
                     <Filete w={110} my={8} />
                     <Estatuilla h={90} cls="mx-auto mt-2 destello" color={fondos < 120 ? ROJO : undefined} />
@@ -813,7 +898,7 @@ export default function Productor() {
                     </div>
                   </Marco>
                   <div className="flex gap-3 mt-4">
-                    <BotonNegro onClick={() => compartir(textoTemporada())} className="flex-1"><Share2 size={15} strokeWidth={1.8} /> {copiado ? "Copiado" : "Compartir"}</BotonNegro>
+                    <BotonNegro onClick={() => compartir(textoTemporada())} className="flex-1"><Share2 size={15} strokeWidth={1.8} /> {copiado ? "Copiado" : "Compartir texto"}</BotonNegro>
                     <BotonOro onClick={nuevaTemporada} className="flex-1"><RefreshCw size={15} strokeWidth={1.8} /> Nueva temporada</BotonOro>
                   </div>
                 </>
