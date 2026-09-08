@@ -61,9 +61,9 @@ const ACTRICES = [
   { n:"Penélope Cruz", c:3, p:5, k:3, g:["drama","comedia"], t:["veterano","es"] },{ n:"Mercedes Morán", c:3, p:5, k:1, g:["drama","comedia"], t:["veterano","ar"] },
 ];
 const PRESUPUESTOS = [
-  { nombre:"Bajo", desc:"Se filma en tres semanas y en la casa de un amigo.", mult:0.5, base:12, factor:2 },
-  { nombre:"Medio", desc:"Hay catering y una escena en helicóptero.", mult:1, base:45, factor:7 },
-  { nombre:"Blockbuster", desc:"El estudio apostó todo. Hay juguetes antes del estreno.", mult:1.8, base:140, factor:14 },
+  { nombre:"Bajo", desc:"Se filma en tres semanas y en la casa de un amigo.", mult:0.6, base:12, factor:2 },
+  { nombre:"Medio", desc:"Hay catering y una escena en helicóptero.", mult:1.6, base:45, factor:7 },
+  { nombre:"Blockbuster", desc:"El estudio apostó todo. Hay juguetes antes del estreno.", mult:3.6, base:140, factor:14 },
 ];
 const ICONO_GENERO = { accion: Bomb, comedia: Heart, terror: Skull, drama: Drama, animacion: Sparkles, scifi: Rocket };
 // Frases del resultado: varias opciones por caso para que no se repitan
@@ -134,6 +134,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 // =====================================================================
 // FÓRMULA DE ESTRENO
 // =====================================================================
+function costoDe(f, presupuesto) {
+  const cast = [f.director, f.actor1, f.actor2];
+  return (presupuesto.base + cast.reduce((s, c) => s + c.k, 0) * presupuesto.factor) * 1.5; // producción + marketing
+}
 function estrenar(f) {
   const { genero, situacion, director, actor1, actor2, presupuesto } = f;
   const cast = [director, actor1, actor2];
@@ -160,9 +164,9 @@ function estrenar(f) {
   const publico = clamp(1.9 + comAvg * 0.9 + afinCount * 0.5 + (situAfin ? 0.7 : -0.5) + (critica - 5.5) * 0.25 + rnd(-1.3, 1.3), 1, 10);
   // taquilla: público potencial del género × tirón del elenco × presupuesto × boca a boca × azar
   const azar = Math.exp(rnd(-0.45, 0.45));
-  const espectadores = genero.publico * Math.pow(comAvg / 5, 1.4) * presupuesto.mult * (0.55 + publico / 12) * (situAfin ? 1 : 0.85) * taq * azar;
+  const espectadores = genero.publico * Math.pow(comAvg / 5, 1.8) * (0.55 + afinCount * 0.22) * presupuesto.mult * (0.55 + publico / 12) * (situAfin ? 1 : 0.85) * taq * azar;
   const recaudacion = espectadores * 10;
-  const total = (presupuesto.base + cast.reduce((s, c) => s + c.k, 0) * presupuesto.factor) * 1.5; // producción + marketing
+  const total = costoDe(f, presupuesto);
   const resultado = recaudacion - total;
   let nivel = 0;
   if (critica >= 8.3) nivel = 2; else if (critica >= 7.2) nivel = 1; else if (critica <= 3.2) nivel = -1;
@@ -506,6 +510,16 @@ function Poster({ titulo, ficha, resultado, conResultado = true, etiqueta = "Com
 // =====================================================================
 // APP
 // =====================================================================
+const FONDOS_INICIALES = 400;
+const PELIS_POR_TEMPORADA = 3;
+const TITULOS_PRODUCTOR = [
+  [900, "Magnate de Hollywood", "Tenés estudio propio y un pase VIP vitalicio a la gala."],
+  [600, "Productor de peso", "El estudio te devuelve las llamadas antes del mediodía."],
+  [400, "Productor sólido", "Terminaste con lo que empezaste. En esta industria, eso es ganar."],
+  [150, "Sobreviviente", "Perdiste plata, pero seguís invitado a las fiestas."],
+  [0, "Productor en bancarrota", "El estudio te agradece los servicios prestados."],
+];
+
 export default function Productor() {
   const [paso, setPaso] = useState("portada");
   const [saliendo, setSaliendo] = useState(false);
@@ -514,47 +528,84 @@ export default function Productor() {
   const [spinId, setSpinId] = useState(0);
   const [girando, setGirando] = useState(false);
   const [girado, setGirado] = useState(false);
+  const [genero, setGenero] = useState(null);
   const [ficha, setFicha] = useState(null);
   const [revelado, setRevelado] = useState(0);
   const [resultado, setResultado] = useState(null);
   const [telon, setTelon] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [tenso, setTenso] = useState(null);
+  const [fondos, setFondos] = useState(FONDOS_INICIALES);
+  const [pelis, setPelis] = useState([]); // temporada
 
-  const darVuelta = () => { if (tenso !== null) return; setTenso(revelado); setTimeout(() => { setRevelado((r) => r + 1); setTenso(null); }, 1000); };
+  const nPeli = pelis.length + 1;
   const irA = (p, fn) => { setSaliendo(true); setTimeout(() => { fn && fn(); setPaso(p); setSaliendo(false); }, 240); };
+  const darVuelta = () => { if (tenso !== null) return; setTenso(revelado); setTimeout(() => { setRevelado((r) => r + 1); setTenso(null); }, 1000); };
   const girar = () => { if (girando) return; setGirado(false); setGirando(true); setSIdx(Math.floor(Math.random() * SUSTANTIVOS.length)); setAIdx(Math.floor(Math.random() * ADJETIVOS.length)); setSpinId((s) => s + 1); };
   const titulo = `${SUSTANTIVOS[sIdx]} ${ADJETIVOS[aIdx]}`;
-  const repartir = () => irA("mazos", () => { const a1 = pick(ACTORES), a2 = pick(ACTRICES); setFicha({ genero: pick(GENEROS), protagonista: pick(PROTAGONISTAS), situacion: pick(SITUACIONES), director: pick(DIRECTORES), actor1: a1, actor2: a2, presupuesto: pick(PRESUPUESTOS) }); setRevelado(0); });
+  const elegirGenero = (g) => irA("ruleta", () => { setGenero(g); setGirado(false); });
+  const repartir = () => irA("mazos", () => { setFicha({ genero, protagonista: pick(PROTAGONISTAS), situacion: pick(SITUACIONES), director: pick(DIRECTORES), actor1: pick(ACTORES), actor2: pick(ACTRICES), presupuesto: null }); setRevelado(0); });
   const mazos = ficha ? [
-    { nombre: "Género", valor: ficha.genero.nombre, sub: ficha.genero.tag, Icono: Clapperboard, IconoFrente: ICONO_GENERO[ficha.genero.id] },
     { nombre: "Protagonista", valor: ficha.protagonista, Icono: CircleUserRound },
     { nombre: "Conflicto", valor: ficha.situacion.texto, Icono: Swords },
     { nombre: "Dirige", valor: ficha.director.n, Icono: Video },
     { nombre: "Actor", valor: ficha.actor1.n, Icono: Star },
     { nombre: "Actriz", valor: ficha.actor2.n, Icono: (p) => <Star {...p} fill={p.color} /> },
-    { nombre: "Presupuesto", valor: ficha.presupuesto.nombre, sub: ficha.presupuesto.desc, Icono: Banknote },
   ] : [];
-  const lanzar = () => { setTelon(true); setTimeout(() => { setResultado(estrenar(ficha)); setPaso("poster"); setCopiado(false); }, 700); setTimeout(() => setTelon(false), 1250); };
-  const reiniciar = () => irA("ruleta", () => { setGirado(false); setFicha(null); setResultado(null); });
+  const irAPresupuesto = () => irA("presupuesto");
+  const lanzar = (pres) => {
+    const f = { ...ficha, presupuesto: pres };
+    setFicha(f); setTelon(true);
+    setTimeout(() => { const r = estrenar(f); setResultado(r); setFondos((x) => Math.round(x - r.costo + r.recaudacion)); setPelis((ps) => [...ps, { titulo, genero: f.genero.nombre, resultado: r.resultado, critica: r.critica }]); setPaso("poster"); setCopiado(false); }, 700);
+    setTimeout(() => setTelon(false), 1250);
+  };
+  const siguiente = () => {
+    const quebrado = fondos < Math.min(...PRESUPUESTOS.map((p) => p.base * 1.5));
+    if (pelis.length >= PELIS_POR_TEMPORADA || quebrado) irA("temporada");
+    else irA("genero", () => { setGirado(false); setFicha(null); setResultado(null); setGenero(null); });
+  };
+  const nuevaTemporada = () => irA("genero", () => { setFondos(FONDOS_INICIALES); setPelis([]); setGirado(false); setFicha(null); setResultado(null); setGenero(null); });
+  const rango = TITULOS_PRODUCTOR.find(([min]) => fondos >= min) || TITULOS_PRODUCTOR[TITULOS_PRODUCTOR.length - 1];
   const textoCompartir = () => { const r = resultado, f = ficha; const gano = r.resultado >= 0 ? `ganó ${M(r.resultado)}` : `perdió ${M(-r.resultado)}`; return `🎬 Produje "${titulo}"\n${f.genero.nombre} dirigida por ${f.director.n}, con ${f.actor1.n} y ${f.actor2.n}.\n${Esp(r.espectadores)} de espectadores, ${gano}.\nCrítica ${r.critica.toFixed(1)} · Público ${r.publico.toFixed(1)}\n${r.premio}\n${r.secuela}`; };
-  const compartir = async () => { const t = textoCompartir(); try { if (navigator.share) { await navigator.share({ text: t }); return; } } catch (e) {} try { await navigator.clipboard.writeText(t); setCopiado(true); } catch (e) {} };
+  const textoTemporada = () => `🎬 Mi temporada como productor: ${rango[1]}\n${pelis.map((p) => `${p.titulo} (${p.genero}): ${p.resultado >= 0 ? "ganó" : "perdió"} ${M(Math.abs(p.resultado))}`).join("\n")}\nCerré con ${M(fondos)} en caja.`;
+  const compartir = async (t) => { try { if (navigator.share) { await navigator.share({ text: t }); return; } } catch (e) {} try { await navigator.clipboard.writeText(t); setCopiado(true); } catch (e) {} };
   const sinopsis = ficha ? `${ficha.protagonista}. ${ficha.situacion.texto}. ${ficha.genero.tag}` : "";
-  const tituloVisible = girado || (paso !== "ruleta" && paso !== "portada");
-  const verResultado = () => irA("resultado");
-  const subMarq = paso === "ruleta" && !girado ? "Elegí el título" : ficha && revelado >= 1 ? ficha.genero.nombre : "En cartel";
+  const tituloVisible = girado || ["mazos", "presupuesto"].includes(paso);
+  const conMarquesina = ["ruleta", "mazos", "presupuesto"].includes(paso);
+  const subMarq = paso === "ruleta" && !girado ? `Elegí el título de su ${genero ? genero.nombre.toLowerCase() : "película"}` : genero ? genero.nombre : "En cartel";
 
   return (
     <div className="min-h-screen w-full flex justify-center relative overflow-hidden" style={{ background: `radial-gradient(ellipse 80% 50% at 50% 0%, #1E1708, ${NEGRO} 70%)`, color: MARFIL, fontFamily: UI }}>
       <style>{CSS}</style>
       {paso !== "portada" && <Rayos />}
       <div className="w-full max-w-md px-4 py-6 relative">
-        {paso === "portada" && <Portada onStart={() => irA("ruleta")} />}
+        {paso === "portada" && <Portada onStart={() => irA("genero")} />}
 
         {paso !== "portada" && (
           <>
-            {paso !== "poster" && paso !== "resultado" && <Marquesina encendida={tituloVisible} texto={tituloVisible ? titulo.toUpperCase() : "— — —"} sub={subMarq} />}
+            {/* franja de temporada */}
+            <div className="flex justify-between items-center mb-4 px-1" style={{ ...versal(10), color: ORO }}>
+              <span>{paso === "temporada" ? "Cierre de temporada" : `Película ${Math.min(nPeli, PELIS_POR_TEMPORADA)} de ${PELIS_POR_TEMPORADA}`}</span>
+              <span className="flex items-center gap-2"><Banknote size={14} strokeWidth={1.6} /> {M(fondos)} en caja</span>
+            </div>
+            {conMarquesina && <Marquesina encendida={tituloVisible} texto={tituloVisible ? titulo.toUpperCase() : "— — —"} sub={subMarq} />}
+
             <div className={saliendo ? "panel-out" : "panel"} key={paso}>
+              {paso === "genero" && (
+                <>
+                  <div className="text-center mb-1" style={{ ...versal(11), color: ORO }}>¿Qué película quiere hacer?</div>
+                  <Filete w={140} my={8} />
+                  <div className="grid grid-cols-2 gap-3 mt-4">
+                    {GENEROS.map((g, i) => { const Ic = ICONO_GENERO[g.id]; return (
+                      <button key={g.id} onClick={() => elegirGenero(g)} className="carta text-left px-4 py-4 flex flex-col gap-2" style={{ animationDelay: `${i * 60}ms`, background: LACA, border: `1px solid ${ORO}`, boxShadow: `inset 0 0 0 3px ${LACA}, inset 0 0 0 4px ${ORO}55`, color: MARFIL, cursor: "pointer" }}>
+                        <Ic size={26} color={ORO} strokeWidth={1.5} />
+                        <span style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 14, letterSpacing: ".04em" }}>{g.nombre}</span>
+                        <span style={{ fontSize: 12, color: GRIS, fontStyle: "italic", lineHeight: 1.35 }}>{g.tag}</span>
+                      </button>); })}
+                  </div>
+                </>
+              )}
+
               {paso === "ruleta" && (
                 <>
                   <div className="flex gap-4">
@@ -563,7 +614,7 @@ export default function Productor() {
                   </div>
                   <div className="flex gap-3 mt-6">
                     {girado
-                      ? <><BotonNegro onClick={girar} className="flex-1"><RefreshCw size={15} strokeWidth={1.8} /> Otra vez</BotonNegro><BotonOro onClick={repartir} className="flex-1 panel"><Film size={16} strokeWidth={1.8} /> Armar la película</BotonOro></>
+                      ? <><BotonNegro onClick={girar} className="flex-1"><RefreshCw size={15} strokeWidth={1.8} /> Otra vez</BotonNegro><BotonOro onClick={repartir} className="flex-1 panel"><Film size={16} strokeWidth={1.8} /> Armar el equipo</BotonOro></>
                       : <BotonOro onClick={girar} disabled={girando} className="w-full"><RefreshCw size={16} strokeWidth={1.8} /> {girando ? "Girando" : "Girar la ruleta"}</BotonOro>}
                   </div>
                 </>
@@ -581,10 +632,32 @@ export default function Productor() {
                       <div className="panel">
                         <Filete w={160} my={6} />
                         <p className="text-center" style={{ fontSize: 15, lineHeight: 1.55, margin: "10px 0 16px", fontStyle: "italic", color: MARFIL }}>{sinopsis}</p>
-                        <BotonOro onClick={lanzar} grande className="w-full estrenar"><Clapperboard size={22} strokeWidth={1.8} /> Estrenar</BotonOro>
+                        <BotonOro onClick={irAPresupuesto} grande className="w-full"><Banknote size={22} strokeWidth={1.8} /> Decidir el presupuesto</BotonOro>
                       </div>
                     )}
                   </div>
+                </>
+              )}
+
+              {paso === "presupuesto" && ficha && (
+                <>
+                  <div className="text-center mb-1" style={{ ...versal(11), color: ORO }}>¿Cuánto le pone a esta película?</div>
+                  <Filete w={140} my={8} />
+                  <p className="text-center" style={{ fontSize: 13, color: GRIS, fontStyle: "italic", marginBottom: 14 }}>Con {ficha.director.n}, {ficha.actor1.n} y {ficha.actor2.n} en {ficha.genero.nombre.toLowerCase()}.</p>
+                  <div className="flex flex-col gap-3">
+                    {PRESUPUESTOS.map((pr, i) => { const c = costoDe(ficha, pr); const puede = c <= fondos; return (
+                      <button key={pr.nombre} onClick={() => puede && lanzar(pr)} disabled={!puede} className="carta text-left px-4 py-3 flex items-center gap-3" style={{ animationDelay: `${i * 70}ms`, background: puede ? LACA : NEGRO, border: `1px solid ${puede ? ORO : "#3A3320"}`, boxShadow: puede ? `inset 0 0 0 3px ${LACA}, inset 0 0 0 4px ${ORO}55` : "none", color: puede ? MARFIL : "#5C5642", cursor: puede ? "pointer" : "default", opacity: puede ? 1 : 0.6 }}>
+                        <div className="flex-1">
+                          <div style={{ ...versal(12), color: puede ? ORO_C : "#5C5642" }}>{pr.nombre}</div>
+                          <div style={{ fontSize: 12, color: GRIS, fontStyle: "italic", marginTop: 2 }}>{pr.desc}</div>
+                        </div>
+                        <div className="text-right">
+                          <div style={{ fontFamily: DISPLAY, fontWeight: DW, fontSize: 22, color: puede ? MARFIL : "#5C5642" }}>{M(c)}</div>
+                          <div style={{ fontSize: 11, color: GRIS }}>{puede ? `quedan ${M(fondos - c)}` : "no alcanza"}</div>
+                        </div>
+                      </button>); })}
+                  </div>
+                  <p className="text-center mt-4" style={{ fontSize: 12, color: GRIS, fontStyle: "italic" }}>Incluye producción y marketing. Lo que recaude vuelve a la caja.</p>
                 </>
               )}
 
@@ -592,7 +665,7 @@ export default function Productor() {
                 <>
                   <div className="text-center mb-4" style={{ ...versal(11), color: ORO }}>Su película está en cartel</div>
                   <Poster titulo={titulo} ficha={ficha} resultado={resultado} conResultado={false} />
-                  <BotonNegro onClick={verResultado} className="w-full mt-3"><Ticket size={15} strokeWidth={1.8} /> Ver cómo le fue</BotonNegro>
+                  <BotonNegro onClick={() => irA("resultado")} className="w-full mt-3"><Ticket size={15} strokeWidth={1.8} /> Ver cómo le fue</BotonNegro>
                 </>
               )}
 
@@ -621,11 +694,40 @@ export default function Productor() {
                       <p className="flex items-start gap-2"><Film size={16} color="#6A6A6A" strokeWidth={1.8} style={{ marginTop: 2, flexShrink: 0 }} />{resultado.secuela}</p>
                       {resultado.notas.map((n) => <p key={n} style={{ fontStyle: "italic", color: "#4A4A4A" }}>{n}</p>)}
                     </div>
+                    <div className="text-center mt-4 pt-3" style={{ borderTop: `1px solid ${ORO}55`, ...versal(10), color: ORO_O }}>Caja del productor: {M(fondos)}</div>
                   </Marco>
                   <div className="mt-4"><Poster titulo={titulo} ficha={ficha} resultado={resultado} conResultado={true} etiqueta="Compartir póster con resultado" oculto /></div>
                   <div className="flex gap-3 mt-3">
-                    <BotonNegro onClick={compartir} className="flex-1"><Share2 size={15} strokeWidth={1.8} /> {copiado ? "Copiado" : "Compartir texto"}</BotonNegro>
-                    <BotonNegro onClick={reiniciar} className="flex-1"><RefreshCw size={15} strokeWidth={1.8} /> Producir otra</BotonNegro>
+                    <BotonNegro onClick={() => compartir(textoCompartir())} className="flex-1"><Share2 size={15} strokeWidth={1.8} /> {copiado ? "Copiado" : "Compartir texto"}</BotonNegro>
+                    <BotonOro onClick={siguiente} className="flex-1">{pelis.length >= PELIS_POR_TEMPORADA ? "Cerrar temporada" : "Siguiente película"}</BotonOro>
+                  </div>
+                </>
+              )}
+
+              {paso === "temporada" && (
+                <>
+                  <Marco fondo={MARFIL} pad={20} style={{ color: NEGRO }} className="text-center">
+                    <div style={{ ...versal(10), color: ORO_O }}>Su temporada como productor</div>
+                    <Filete w={110} my={8} />
+                    <Estatuilla h={90} cls="mx-auto mt-2 destello" color={fondos < 120 ? ROJO : undefined} />
+                    <div className="mt-3" style={{ fontFamily: SERIF, fontWeight: 700, fontSize: 22, letterSpacing: ".06em" }}>{rango[1]}</div>
+                    <p style={{ fontSize: 13, color: "#5A5A5A", fontStyle: "italic", marginTop: 4 }}>{rango[2]}</p>
+                    <div className="mt-4 flex flex-col gap-2 text-left">
+                      {pelis.map((p, i) => (
+                        <div key={i} className="flex items-center justify-between gap-3" style={{ borderTop: `1px solid ${ORO}55`, paddingTop: 8 }}>
+                          <div><div style={{ fontFamily: DISPLAY, fontWeight: DW, fontSize: 18 }}>{p.titulo.toUpperCase()}</div><div style={{ fontSize: 12, color: "#6A6A6A" }}>{p.genero} · crítica {p.critica.toFixed(1)}</div></div>
+                          <div style={{ fontFamily: DISPLAY, fontWeight: DW, fontSize: 18, color: p.resultado >= 0 ? "#2F6B3A" : ROJO }}>{p.resultado >= 0 ? "+" : "−"}{M(Math.abs(p.resultado))}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${ORO}` }}>
+                      <div style={{ ...versal(9), color: "#6A6A6A" }}>Empezó con {M(FONDOS_INICIALES)} · cerró con</div>
+                      <div style={{ fontFamily: DISPLAY, fontWeight: DW, fontSize: 34, color: fondos >= FONDOS_INICIALES ? "#2F6B3A" : ROJO }}>{M(fondos)}</div>
+                    </div>
+                  </Marco>
+                  <div className="flex gap-3 mt-4">
+                    <BotonNegro onClick={() => compartir(textoTemporada())} className="flex-1"><Share2 size={15} strokeWidth={1.8} /> {copiado ? "Copiado" : "Compartir"}</BotonNegro>
+                    <BotonOro onClick={nuevaTemporada} className="flex-1"><RefreshCw size={15} strokeWidth={1.8} /> Nueva temporada</BotonOro>
                   </div>
                 </>
               )}
